@@ -407,4 +407,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public void setSlowMode(boolean isSlowMode) {
         slowMode = isSlowMode;
     }
+    public void stop() {
+
+        setControl(new SwerveRequest.FieldCentric()
+
+            .withVelocityX(0.0)
+
+            .withVelocityY(0.0)
+
+            .withRotationalRate(0.0));
+
+    }
+
 }
+
+

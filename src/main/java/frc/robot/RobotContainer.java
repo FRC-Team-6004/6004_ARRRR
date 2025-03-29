@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AutoCommands;
+import frc.robot.commands.barebonesvision;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.GenericRequirement;
 import frc.robot.subsystems.swerve.Swerve;
@@ -88,7 +89,7 @@ public class RobotContainer {
     drivetrain.setDefaultCommand(
       drivetrain
           .applyRequest(() -> drive.withVelocityX(-Constants.OIConstants.driverController.getLeftY() * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-Constants.OIConstants.driverController.getLeftX() * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-Constants.OIConstants.driverController.getLeftX() * 0.8 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-Constants.OIConstants.driverController.getRightX() * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // Zero heading
@@ -100,6 +101,11 @@ public class RobotContainer {
     Constants.OIConstants.driverController.rightBumper().whileTrue(
       AutoCommands.alignAlgae()
     );
+    
+      // Reef align
+      Constants.OIConstants.driverController.rightBumper().whileTrue(
+        AutoCommands.alignReefUntil()
+      );
 
     // Slow mode
     Constants.OIConstants.driverController.leftTrigger().onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));

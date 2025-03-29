@@ -28,11 +28,13 @@ public class AutoCommands {
     }
 
     public static Command alignReefUntil() {
+        System.out.println("running");
         return new AutoAlignReef(
             new ProfiledPIDController(5,
              0, 0, new Constraints(SwerveConstants.MaxSpeed, maxAccel.get())), 
             new ProfiledPIDController(7.5, 0, 0, new Constraints(SwerveConstants.MaxAngularRate, 3))
-        ).until(() -> OIConstants.aligned);
+        ).until(() -> false);
+
     }
 
     public static Command scoreLeftReef() {
