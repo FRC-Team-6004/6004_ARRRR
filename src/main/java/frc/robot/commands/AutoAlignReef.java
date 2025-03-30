@@ -1,7 +1,7 @@
 
 package frc.robot.commands;
 
-import frc.robot.Constants;
+import frc.robot.constants;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.OIConstants;
+import frc.robot.constants.OIConstants;
 
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.vision.AprilTag.Vision;
@@ -86,7 +86,7 @@ public class AutoAlignReef extends Command {
 
     @Override
     public void execute() {
-        isScoringLeft = Constants.OIConstants.isScoringLeft;
+        isScoringLeft = constants.OIConstants.isScoringLeft;
         reefScoringPose = Vision.getInstance().getBestReefPose();
         
         offset = getScoringPositionOffset(isScoringLeft);
@@ -139,7 +139,7 @@ public class AutoAlignReef extends Command {
     }
 
     public boolean finishedAligning() {
-        return false; //distance < Units.inchesToMeters(1.5)
+        return distance < Units.inchesToMeters(1.5); //distance < Units.inchesToMeters(1.5)
     }
 
     public boolean inScoringDistance() {

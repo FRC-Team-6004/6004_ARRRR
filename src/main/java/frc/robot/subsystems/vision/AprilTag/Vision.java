@@ -9,10 +9,10 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.util.Units;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.OIConstants;
+import frc.robot.constants.FieldConstants;
+import frc.robot.constants.OIConstants;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.Constants;
+import frc.robot.constants;
 
 import static frc.robot.subsystems.vision.AprilTag.VisionConstants.*;
 
@@ -68,7 +68,7 @@ public class Vision extends SubsystemBase{
 
 
     public Pose2d getBestReefPose() {
-        if(Constants.currentMode == Constants.Mode.SIM)
+        if(constants.currentMode == constants.Mode.SIM)
         {
             return VisionConstants.redReefScoringPoses[0];
         }

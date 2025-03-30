@@ -17,12 +17,30 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.OIConstants;
+import frc.robot.constants.OIConstants;
+import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoCommands;
+import frc.robot.commands.Barge;
+import frc.robot.commands.ElevatorSetPos1;
+import frc.robot.commands.ElevatorSetPos2;
+import frc.robot.commands.ElevatorSetPos3;
+import frc.robot.commands.ElevatorSetPos4;
+import frc.robot.commands.ElevatorSetPos5;
+import frc.robot.commands.ElevatorSetPos6;
+import frc.robot.commands.GrabIn;
+import frc.robot.commands.GrabOut;
+import frc.robot.commands.PivotPos1;
+import frc.robot.commands.PivotPos2;
+import frc.robot.commands.PivotPos3;
+import frc.robot.commands.PivotTimedRev;
 import frc.robot.commands.barebonesvision;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
+import frc.robot.subsystems.GrabSub;
+import frc.robot.subsystems.PivotSub;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.vision.AprilTag.Vision;
@@ -33,6 +51,13 @@ import frc.robot.util.NamedCommandManager;
 public class RobotContainer {
   private RobotVisualizer visualizer;
   private Vision vision;
+  
+  
+  private final Elevator elevatorSubsystem = new Elevator();
+  private CommandXboxController op = new CommandXboxController(1);
+    public final PivotSub pivotSubsystem = new PivotSub();
+    public final GrabSub grabSubsystem = new GrabSub();
+
 
   // private final Vision vision;
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -53,7 +78,7 @@ public class RobotContainer {
 
   public RobotContainer() throws IOException, ParseException {
     GenericRequirement.initialize();
-    switch (Constants.currentMode) {
+    switch (constants.currentMode) {
       case REAL:
         drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
         vision = Vision.initialize(
@@ -65,7 +90,7 @@ public class RobotContainer {
       case SIM:
         drivetrain = Swerve.initialize(TunerConstants.createDrivetrain());
         visualizer = new RobotVisualizer();
-        if(Constants.visonSimEnabled) {
+        if(constants.visonSimEnabled) {
           vision = Vision.initialize(new VisionIOSim());
         }
         break;
@@ -88,39 +113,70 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-Constants.OIConstants.driverController.getLeftY() * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-Constants.OIConstants.driverController.getLeftX() * 0.8 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withRotationalRate(-Constants.OIConstants.driverController.getRightX() * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
+          .applyRequest(() -> drive.withVelocityX(-constants.OIConstants.driverController.getLeftY() * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-constants.OIConstants.driverController.getLeftX() * 0.8 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withRotationalRate(-constants.OIConstants.driverController.getRightX() * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
-    // Zero heading
-    Constants.OIConstants.driverController.b().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    // field center
+    constants.OIConstants.driverController.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     
-
-    // Algae align
-    Constants.OIConstants.driverController.rightBumper().whileTrue(
-      AutoCommands.alignAlgae()
-    );
-    
-      // Reef align
-      Constants.OIConstants.driverController.rightBumper().whileTrue(
-        AutoCommands.alignReefUntil()
-      );
-
-    // Slow mode
-    Constants.OIConstants.driverController.leftTrigger().onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
-    Constants.OIConstants.driverController.leftTrigger().onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
-
-      
     // Change reef scoring stem
-    OIConstants.driverController.x().onTrue(
+    OIConstants.driverController.leftBumper().onTrue(
         Commands.runOnce(() -> drivetrain.setScoringLeft()
       ));
-    OIConstants.driverController.y().onTrue(
+    OIConstants.driverController.rightBumper().onTrue(
         Commands.runOnce(() -> drivetrain.setScoringRight()
       ));
 
+    // Right reef align
+    constants.OIConstants.driverController.rightBumper().whileTrue(
+      AutoCommands.alignReefUntil()
+      );
+    
+    // Left reef align
+    constants.OIConstants.driverController.leftBumper().whileTrue(
+       AutoCommands.alignReefUntil()
+    );
 
+    // Algea align
+   constants.OIConstants.driverController.a().whileTrue(
+    AutoCommands.alignAlgae()
+   );
+
+    // Slow mode
+    constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
+    constants.OIConstants.driverController.rightTrigger(0.5).onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
+
+   op.povDown().whileTrue(new ElevatorSetPos1(elevatorSubsystem));
+   op.povLeft().whileTrue(new ElevatorSetPos2(elevatorSubsystem));
+   op.povRight().whileTrue(new ElevatorSetPos3(elevatorSubsystem));
+   op.povUp().whileTrue(new ElevatorSetPos4(elevatorSubsystem));
+   op.povDown().whileTrue(new PivotPos1(pivotSubsystem));
+   op.povLeft().whileTrue(new PivotPos1(pivotSubsystem));
+   op.povRight().whileTrue(new PivotPos1(pivotSubsystem));
+   op.povUp().whileTrue(new PivotPos2(pivotSubsystem));
+   op.povDown().onFalse(new PivotTimedRev(pivotSubsystem));
+
+
+    op.a().whileTrue(new ElevatorSetPos2(elevatorSubsystem));
+    op.y().whileTrue(new ElevatorSetPos4(elevatorSubsystem));
+    op.x().whileTrue(new ElevatorSetPos5(elevatorSubsystem));
+    op.b().whileTrue(new ElevatorSetPos6(elevatorSubsystem));
+    op.a().whileTrue(new PivotPos3(pivotSubsystem));
+    op.b().whileTrue(new PivotPos3(pivotSubsystem));
+    op.x().whileTrue(new PivotPos3(pivotSubsystem));
+    op.y().whileTrue(new PivotPos3(pivotSubsystem));       
+    op.a().whileTrue(new AlgaeHold(grabSubsystem));
+    op.b().whileTrue(new AlgaeHold(grabSubsystem));
+    op.x().whileTrue(new AlgaeHold(grabSubsystem));
+    op.y().whileTrue(new AlgaeHold(grabSubsystem));
+    
+    op.leftStick().onTrue(new Barge(grabSubsystem, pivotSubsystem));
+
+
+    op.leftTrigger(0.5).whileTrue(new GrabIn(grabSubsystem));
+    op.rightTrigger(0.5).whileTrue(new GrabOut(grabSubsystem));
 
     
 
@@ -132,11 +188,6 @@ public class RobotContainer {
   }
 
   public void periodic() {
-    Logger.recordOutput("Score/isLeftL4", OIConstants.autoScoreMode == 4 && OIConstants.isScoringLeft);
-    Logger.recordOutput("Score/isLeftL3", OIConstants.autoScoreMode == 3 && OIConstants.isScoringLeft);
-    Logger.recordOutput("Score/isLeftL2", OIConstants.autoScoreMode == 2 && OIConstants.isScoringLeft);
-    Logger.recordOutput("Score/isRightL4", OIConstants.autoScoreMode == 4 && !OIConstants.isScoringLeft);
-    Logger.recordOutput("Score/isRightL3", OIConstants.autoScoreMode == 3 && !OIConstants.isScoringLeft);
-    Logger.recordOutput("Score/isRightL2", OIConstants.autoScoreMode == 2 && !OIConstants.isScoringLeft);
+
   }
 }

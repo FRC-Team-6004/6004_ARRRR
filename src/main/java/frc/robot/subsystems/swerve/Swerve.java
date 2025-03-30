@@ -38,8 +38,8 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
-import frc.robot.Constants.OIConstants;
+import frc.robot.constants;
+import frc.robot.constants.OIConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -361,7 +361,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public Pose2d processJoystickInput() {
         double x = -OIConstants.driverController.getLeftX();
         double y = -OIConstants.driverController.getLeftY();
-        double omega = -Constants.OIConstants.driverController.getRightX();
+        double omega = -constants.OIConstants.driverController.getRightX();
         double speed = Math.hypot(x, y);
         double direction = Math.atan2(y, x);
 

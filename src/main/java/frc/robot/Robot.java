@@ -26,7 +26,7 @@ public class Robot extends LoggedRobot {
 
   public Robot() throws IOException, ParseException {
     Logger.recordMetadata("ProjectName", "2025-Reefscape");
-    switch (Constants.currentMode) {
+    switch (constants.currentMode) {
       case REAL:
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());

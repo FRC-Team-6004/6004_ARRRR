@@ -6,7 +6,7 @@
 // the root directory of this project.
 package frc.robot.util;
 
-import frc.robot.Constants;
+import frc.robot.constants;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
     if (!hasDefault) {
       hasDefault = true;
       this.defaultValue = defaultValue;
-      if (Constants.tuningMode) {
+      if (constants.tuningMode) {
         dashboardNumber = new LoggedNetworkNumber(key, defaultValue);
       }
     }
@@ -71,7 +71,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
     if (!hasDefault) {
       return 0.0;
     } else {
-      return Constants.tuningMode ? dashboardNumber.get() : defaultValue;
+      return constants.tuningMode ? dashboardNumber.get() : defaultValue;
     }
   }
 

@@ -6,7 +6,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.OIConstants;
+import frc.robot.constants.OIConstants;
 import frc.robot.subsystems.GenericRequirement;
 
 import frc.robot.subsystems.swerve.Swerve;
@@ -33,7 +33,7 @@ public class AutoCommands {
             new ProfiledPIDController(5,
              0, 0, new Constraints(SwerveConstants.MaxSpeed, maxAccel.get())), 
             new ProfiledPIDController(7.5, 0, 0, new Constraints(SwerveConstants.MaxAngularRate, 3))
-        ).until(() -> false);
+        ).until(() -> OIConstants.aligned); //
 
     }
 
