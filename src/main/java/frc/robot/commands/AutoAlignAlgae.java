@@ -85,7 +85,7 @@ public class AutoAlignAlgae extends Command{
         
         double scalar =  scalar(distance);
         double drivePIDOutput = translationController.calculate(distance, 0);
-        double driveSpeed = mult * scalar * translationController.getSetpoint().velocity + drivePIDOutput;
+        double driveSpeed = .1 * mult * scalar * translationController.getSetpoint().velocity + drivePIDOutput;
         Rotation2d direction = new Rotation2d(currentPose.getX() - targetPose.getX(), currentPose.getY() - targetPose.getY());
 
         Logger.recordOutput("AutoAlignAlgae/target pose", targetPose);

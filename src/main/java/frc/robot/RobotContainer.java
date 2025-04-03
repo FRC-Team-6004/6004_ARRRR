@@ -35,7 +35,6 @@ import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
 import frc.robot.commands.PivotTimedRev;
-import frc.robot.commands.barebonesvision;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
