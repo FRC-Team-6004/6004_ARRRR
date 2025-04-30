@@ -39,23 +39,23 @@ public class VisionConstants {
         // Front Camera Right
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(11.875),
-                Units.inchesToMeters(-6.9),
-                Units.inchesToMeters(7)), 
+                Units.inchesToMeters(10),
+                Units.inchesToMeters(-12),
+                Units.inchesToMeters(5)), 
             new Rotation3d(
-                Units.degreesToRadians(-7), 
-                Units.degreesToRadians(-35), 
+                Units.degreesToRadians(0), 
+                Units.degreesToRadians(0), 
                 Units.degreesToRadians(0))), 
 
         // Front Camera Left
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(11.875),
-                Units.inchesToMeters(6.9),
-                Units.inchesToMeters(7)), 
+                Units.inchesToMeters(10.5),
+                Units.inchesToMeters(11),
+                Units.inchesToMeters(5)), 
             new Rotation3d(
-                Units.degreesToRadians(-6), 
-                Units.degreesToRadians(-35), 
+                Units.degreesToRadians(0), 
+                Units.degreesToRadians(0), 
                 Units.degreesToRadians(0)))
 
         };

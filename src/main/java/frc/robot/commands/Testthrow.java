@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 
 /** An liftUpCommand that uses an lift subsystem. */
-public class ThrowForFun extends Command {
+public class Testthrow extends Command {
   private final PivotSub m_intake;
   private final GrabSub m_grab;
 
@@ -26,7 +26,7 @@ public class ThrowForFun extends Command {
    *
    * @param lift The subsystem used by this command.
    */
-  public ThrowForFun(GrabSub input, PivotSub input2) {
+  public Testthrow(GrabSub input, PivotSub input2) {
     m_grab = input;
     m_intake = input2;
     addRequirements(input, input2);

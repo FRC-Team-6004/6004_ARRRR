@@ -102,7 +102,7 @@ public class AutoAlignReef extends Command {
         
         double scalar =  scalar(distance);
         double drivePIDOutput = translationController.calculate(distance, 0);
-        double driveSpeed = .1 * mult * scalar * translationController.getSetpoint().velocity + drivePIDOutput;
+        double driveSpeed = 1 * mult * scalar * translationController.getSetpoint().velocity + drivePIDOutput;
         Rotation2d direction = new Rotation2d(currentPose.getX() - targetPose.getX(), currentPose.getY() - targetPose.getY());
         System.out.println(distance);
         Logger.recordOutput("AutoAlign/target pose", targetPose);

@@ -43,7 +43,6 @@ public class GrabSub extends SubsystemBase {
     public void periodic() {
      /*   int cantime = 0;
        CANrange CANrange = new CANrange(1);
-       CANrangeConfiguration CANrangeConfigs = new CANrangeConfiguration();
        CANrangeDistance = CANrange.getDistance().getValueAsDouble();
        boolean CANdetects = CANrange.getIsDetected().getValue();
        if (CANdetects && CANrangeDistance <= .04 && CANrangeDistance >= .023) {

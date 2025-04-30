@@ -35,7 +35,7 @@ import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
 import frc.robot.commands.PivotTimedRev;
-import frc.robot.commands.ThrowForFun;
+import frc.robot.commands.Testthrow;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
@@ -113,8 +113,8 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-constants.OIConstants.driverController.getLeftY() * .9 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-constants.OIConstants.driverController.getLeftX() * 0.3 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          .applyRequest(() -> drive.withVelocityX(-constants.OIConstants.driverController.getLeftY() * -.5 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-constants.OIConstants.driverController.getLeftX() * -0.5 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .3 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
@@ -173,7 +173,7 @@ public class RobotContainer {
     //op.y().whileTrue(new AlgaeHold(grabSubsystem));
     
     op.leftStick().onTrue(new Barge(grabSubsystem, pivotSubsystem));
-    op.rightStick().onTrue(new ThrowForFun(grabSubsystem, pivotSubsystem));
+    op.rightStick().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
 
 
     op.leftTrigger(0.05).whileTrue(new GrabIn(grabSubsystem));
