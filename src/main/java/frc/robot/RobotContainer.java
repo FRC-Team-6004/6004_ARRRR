@@ -31,10 +31,12 @@ import frc.robot.commands.ElevatorSetPos5;
 import frc.robot.commands.ElevatorSetPos6;
 import frc.robot.commands.GrabIn;
 import frc.robot.commands.GrabOut;
+import frc.robot.commands.PivotPos0;
 import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
 import frc.robot.commands.PivotTimedRev;
+import frc.robot.commands.RunL1;
 import frc.robot.commands.Testthrow;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
@@ -148,32 +150,28 @@ public class RobotContainer {
     constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
     constants.OIConstants.driverController.rightTrigger(0.5).onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
 
-   op.povDown().whileTrue(new ElevatorSetPos1(elevatorSubsystem));
-   op.povLeft().whileTrue(new ElevatorSetPos2(elevatorSubsystem));
-   op.povRight().whileTrue(new ElevatorSetPos3(elevatorSubsystem));
-   op.povUp().whileTrue(new ElevatorSetPos4(elevatorSubsystem));
-   op.povDown().whileTrue(new PivotPos1(pivotSubsystem));
-   op.povLeft().whileTrue(new PivotPos1(pivotSubsystem));
-   op.povRight().whileTrue(new PivotPos1(pivotSubsystem));
-   op.povUp().whileTrue(new PivotPos2(pivotSubsystem));
-   op.povDown().onFalse(new PivotTimedRev(pivotSubsystem));
+   op.povDown().onTrue(new ElevatorSetPos1(elevatorSubsystem));
+   op.povLeft().onTrue(new ElevatorSetPos2(elevatorSubsystem));
+   op.povRight().onTrue(new ElevatorSetPos3(elevatorSubsystem));
+   op.povUp().onTrue(new ElevatorSetPos4(elevatorSubsystem));
+   op.povDown().onTrue(new PivotPos1(pivotSubsystem));
+   op.povLeft().onTrue(new PivotPos1(pivotSubsystem));
+   op.povRight().onTrue(new PivotPos1(pivotSubsystem));
+   op.povUp().onTrue(new PivotPos2(pivotSubsystem));
+   op.leftStick().onTrue(new PivotPos0(pivotSubsystem));
+   //op.povDown().onTrue(new RunL1());
 
-
-    op.a().whileTrue(new ElevatorSetPos2(elevatorSubsystem));
-    op.y().whileTrue(new ElevatorSetPos4(elevatorSubsystem));
-    op.x().whileTrue(new ElevatorSetPos5(elevatorSubsystem));
-    op.b().whileTrue(new ElevatorSetPos6(elevatorSubsystem));
-    op.a().whileTrue(new PivotPos3(pivotSubsystem));
-    op.b().whileTrue(new PivotPos3(pivotSubsystem));
-    op.x().whileTrue(new PivotPos3(pivotSubsystem));
-    op.y().whileTrue(new PivotPos3(pivotSubsystem));       
-    //op.a().whileTrue(new AlgaeHold(grabSubsystem));
-    //op.b().whileTrue(new AlgaeHold(grabSubsystem));
-    //op.x().whileTrue(new AlgaeHold(grabSubsystem));
-    //op.y().whileTrue(new AlgaeHold(grabSubsystem));
+    op.a().onTrue(new ElevatorSetPos2(elevatorSubsystem));
+    op.y().onTrue(new ElevatorSetPos4(elevatorSubsystem));
+    op.x().onTrue(new ElevatorSetPos5(elevatorSubsystem));
+    op.b().onTrue(new ElevatorSetPos6(elevatorSubsystem));
+    op.a().onTrue(new PivotPos3(pivotSubsystem));
+    op.b().onTrue(new PivotPos3(pivotSubsystem));
+    op.x().onTrue(new PivotPos3(pivotSubsystem));
+    op.y().onTrue(new PivotPos3(pivotSubsystem));       
     
-    op.leftStick().onTrue(new Barge(grabSubsystem, pivotSubsystem));
-    op.rightStick().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
+    //op.leftStick().onTrue(new Barge(grabSubsystem, pivotSubsystem));
+    //op.rightStick().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
 
 
     op.leftTrigger(0.05).whileTrue(new GrabIn(grabSubsystem));

@@ -33,7 +33,7 @@ public class ElevatorSetPos1 extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_elevator.setPosition(ElevatorConstants.LIFT_HEIGHT_1);
+    m_elevator.setGoal(ElevatorConstants.LIFT_HEIGHT_1);
     //System.out.print("run pid elev");
   }
 
@@ -42,7 +42,7 @@ public class ElevatorSetPos1 extends Command {
   // not drop due to gravity.
   @Override
   public void end(boolean interrupted) {
-    m_elevator.moveElevator(ElevatorConstants.LIFT_HOLD_UP);
+    //m_elevator.moveElevator(ElevatorConstants.LIFT_HOLD_UP);
   }
 
   // Returns true when the command should end.

@@ -33,7 +33,7 @@ public class PivotPos2 extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_intake.setControl(IntakeConstants.PIVOT_POS_2);
+    m_intake.setGoal(IntakeConstants.PIVOT_POS_2);
   }
 
   // Called once the command ends or is interrupted.
@@ -41,7 +41,7 @@ public class PivotPos2 extends Command {
   // When the next command is caled it will override this command
   @Override
   public void end(boolean interrupted) {
-    m_intake.setBrake();
+    //m_intake.setBrake();
   }
 
   // Returns true when the command should end.

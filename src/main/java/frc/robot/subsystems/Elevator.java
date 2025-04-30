@@ -25,6 +25,8 @@ public class Elevator extends SubsystemBase {
 
     private final double COUNTS_PER_INCH = 42.0; // Needs to be measured, not publically available
     private final double GRAVITY_COMPENSATION = (0.5 * 0.05); // edit if needed, should be good
+    private double targetHeight = 0.0; //target height for elevator
+    private double position = 0.0; // current position of the elevator
 
     /**
      * This subsytem that controls the arm.
@@ -59,6 +61,7 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
+        setPosition(targetHeight);
     }
     /** 
      * This is a method that makes the arm move at your desired speed
@@ -96,6 +99,10 @@ public class Elevator extends SubsystemBase {
             (2 * Math.PI * ElevatorConstants.kElevatorDrumRadius);
     }
 
+    public boolean atGoal(double goal) {
+        return MathUtil.isNear(goal, getHeight(), 0.02);
+    }
+    
     public void setPosition(double targetHeight) {
         double pidOutput = pid.calculate(getHeight(), targetHeight);
         
@@ -109,6 +116,10 @@ public class Elevator extends SubsystemBase {
         
         elevatorMotor.set(motorOutput);  
         elevatorMotorFollow.set(-motorOutput);  
+    }
+
+    public void setGoal(double th) {
+        targetHeight = th;
     }
 
 }

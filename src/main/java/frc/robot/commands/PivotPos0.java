@@ -4,14 +4,14 @@
 
 package frc.robot.commands;
 
-import frc.robot.constants.ElevatorConstants;
-import frc.robot.subsystems.Elevator;
+
+import frc.robot.constants.IntakeConstants;
+import frc.robot.subsystems.PivotSub;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /** An liftUpCommand that uses an lift subsystem. */
-public class ElevatorSetPos6 extends Command {
-  private final Elevator m_elevator;
+public class PivotPos0 extends Command {
+  private final PivotSub m_intake;
 
   /**
    * Powers the lift up, when finished passively holds the lift up.
@@ -21,9 +21,9 @@ public class ElevatorSetPos6 extends Command {
    *
    * @param lift The subsystem used by this command.
    */
-  public ElevatorSetPos6(Elevator lift) {
-    m_elevator = lift;
-    addRequirements(lift);
+  public PivotPos0(PivotSub input) {
+    m_intake = input;
+    addRequirements(input);
   }
 
   // Called when the command is initially scheduled.
@@ -33,16 +33,15 @@ public class ElevatorSetPos6 extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_elevator.setGoal(ElevatorConstants.LIFT_HEIGHT_6);
-    //System.out.print("run pid elev");
+    m_intake.setGoal(IntakeConstants.PIVOT_POS_0);
   }
 
   // Called once the command ends or is interrupted.
-  // Here we run a command that will hold the lift up after to ensure the lift does
-  // not drop due to gravity.
+  // Here we run arm down at low speed to ensure it stays down
+  // When the next command is caled it will override this command
   @Override
   public void end(boolean interrupted) {
-    m_elevator.moveElevator(ElevatorConstants.LIFT_HOLD_UP);
+    //m_intake.setBrake();
   }
 
   // Returns true when the command should end.

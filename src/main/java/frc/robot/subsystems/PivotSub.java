@@ -18,7 +18,7 @@ import frc.robot.constants.IntakeConstants;
 
 public class PivotSub extends SubsystemBase {
     TalonFX intakePivot;
-    
+    private double targetPos = 0;
     private final NeutralOut m_brake = new NeutralOut();
     /**
      * This subsystem controls the intake pivot motor.
@@ -37,7 +37,7 @@ public class PivotSub extends SubsystemBase {
         intakePivotConfiguration.CurrentLimits.SupplyCurrentLimitEnable = true;
         intakePivotConfiguration.Voltage.withPeakForwardVoltage(Volts.of(8)).withPeakReverseVoltage(Volts.of(-8));
         // PID control values for position control (Slot 0 settings)
-        intakePivotConfiguration.Slot0.kP = 1.5;
+        intakePivotConfiguration.Slot0.kP = 3;
         intakePivotConfiguration.Slot0.kI = 0.0;
         intakePivotConfiguration.Slot0.kD = 0.1;
         intakePivotConfiguration.Slot0.kG = 1;
@@ -65,18 +65,20 @@ public class PivotSub extends SubsystemBase {
         // Set the position control for the intake pivot motor
         intakePivot.setControl(m_positionVoltage.withPosition(pos));
 
-        System.out.println("Moving to position: " + pos);  // Print the target position for debugging
+        //System.out.println("Moving to position: " + pos);  // Print the target position for debugging
     }
 
     public void setBrake() {
         intakePivot.setControl(m_brake); // Move motor at the specified speed
     }
 
+    public void setGoal(double pos) {
+        targetPos = pos;
+    }
+
     @Override
     public void periodic() {
-        // Periodic code, could be used for logging or debugging motor status
-        //double currentPosition = intakePivot.getPosition().getValue();
-        //System.out.println("Current Position: " + currentPosition);
+        setControl(targetPos);
     }
 
     /** 
