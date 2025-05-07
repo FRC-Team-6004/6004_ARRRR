@@ -23,6 +23,8 @@ import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
+import frc.robot.commands.ClimbPos1;
+import frc.robot.commands.ClimbPos2;
 import frc.robot.commands.ElevatorSetPos1;
 import frc.robot.commands.ElevatorSetPos2;
 import frc.robot.commands.ElevatorSetPos3;
@@ -39,6 +41,7 @@ import frc.robot.commands.PivotTimedRev;
 import frc.robot.commands.RunL1;
 import frc.robot.commands.Testthrow;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
 import frc.robot.subsystems.GrabSub;
@@ -49,6 +52,7 @@ import frc.robot.subsystems.vision.AprilTag.Vision;
 import frc.robot.subsystems.vision.AprilTag.VisionIOReal;
 import frc.robot.subsystems.vision.AprilTag.VisionIOSim;
 import frc.robot.util.NamedCommandManager;
+import frc.robot.subsystems.Climb;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -57,8 +61,10 @@ public class RobotContainer {
   
   private final Elevator elevatorSubsystem = new Elevator();
   private CommandXboxController op = new CommandXboxController(1);
+  private CommandXboxController joystick = new CommandXboxController(0);
     public final PivotSub pivotSubsystem = new PivotSub();
     public final GrabSub grabSubsystem = new GrabSub();
+    public final Climb climbSubsystem = new Climb();
 
 
   // private final Vision vision;
@@ -159,7 +165,6 @@ public class RobotContainer {
    op.povRight().onTrue(new PivotPos1(pivotSubsystem));
    op.povUp().onTrue(new PivotPos2(pivotSubsystem));
    op.leftStick().onTrue(new PivotPos0(pivotSubsystem));
-   //op.povDown().onTrue(new RunL1());
 
     op.a().onTrue(new ElevatorSetPos2(elevatorSubsystem));
     op.y().onTrue(new ElevatorSetPos4(elevatorSubsystem));
@@ -170,13 +175,17 @@ public class RobotContainer {
     op.x().onTrue(new PivotPos3(pivotSubsystem));
     op.y().onTrue(new PivotPos3(pivotSubsystem));       
     
-    //op.leftStick().onTrue(new Barge(grabSubsystem, pivotSubsystem));
-    //op.rightStick().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
+    op.rightBumper().onTrue(new Barge(grabSubsystem, pivotSubsystem));
+    op.leftBumper().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
 
 
     op.leftTrigger(0.05).whileTrue(new GrabIn(grabSubsystem));
     op.leftTrigger(0.99).whileTrue(new AlgaeHold(grabSubsystem));
-    op.rightTrigger(0.5).whileTrue(new GrabOut(grabSubsystem));
+    op.rightTrigger(0.05).whileTrue(new GrabOut(grabSubsystem));
+
+    joystick.povDown().onTrue(new ClimbPos1(climbSubsystem));
+    joystick.povUp().onTrue(new ClimbPos2(climbSubsystem));
+
 
     
 

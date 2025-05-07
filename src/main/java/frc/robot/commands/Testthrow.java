@@ -46,14 +46,14 @@ public class Testthrow extends Command {
   @Override
   public void execute() {
     if (m_timer.get() > .1) {
-      m_intake.setControl(IntakeConstants.PIVOT_POS_1);
+      m_intake.setGoal(IntakeConstants.PIVOT_POS_1);
       if (m_timer.get() > .25) {
           m_grab.moveGrab(-IntakeConstants.INTAKE_SPEED);
       } else {
           m_grab.moveGrab(IntakeConstants.INTAKE_SPEED);
       }
   } else {
-    m_intake.setControl(IntakeConstants.PIVOT_POS_3);
+    m_intake.setGoal(IntakeConstants.PIVOT_POS_3);
     m_grab.moveGrab(IntakeConstants.INTAKE_SPEED);
   }
 
@@ -64,7 +64,6 @@ public class Testthrow extends Command {
   // When the next command is caled it will override this command
   @Override
   public void end(boolean interrupted) {
-    m_intake.setBrake();
     m_grab.moveGrab(IntakeConstants.INTAKE_SPEED_HOLD);
   }
 
