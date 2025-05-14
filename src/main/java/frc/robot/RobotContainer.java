@@ -23,8 +23,10 @@ import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
+import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbPos1;
 import frc.robot.commands.ClimbPos2;
+import frc.robot.commands.ClimbUp;
 import frc.robot.commands.ElevatorSetPos1;
 import frc.robot.commands.ElevatorSetPos2;
 import frc.robot.commands.ElevatorSetPos3;
@@ -183,8 +185,10 @@ public class RobotContainer {
     op.leftTrigger(0.99).whileTrue(new AlgaeHold(grabSubsystem));
     op.rightTrigger(0.05).whileTrue(new GrabOut(grabSubsystem));
 
-    joystick.povDown().onTrue(new ClimbPos1(climbSubsystem));
-    joystick.povUp().onTrue(new ClimbPos2(climbSubsystem));
+    //joystick.povDown().whileTrue(new ClimbPos1(climbSubsystem));
+    //joystick.povUp().whileTrue(new ClimbPos2(climbSubsystem));
+    joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
+    joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
 
     

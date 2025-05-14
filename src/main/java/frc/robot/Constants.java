@@ -132,8 +132,8 @@ public class constants {
     public static final double LIFT_HOLD_DOWN = 0;
     public static final double LIFT_HOLD_UP = 0;
 
-    public static final double LIFT_HEIGHT_1 = 0.0;   //set point 1 is Stowed
-    public static final double LIFT_HEIGHT_2 = 6.0;   //set point 2 is L2
+    public static final double LIFT_HEIGHT_1 = -5.0;   //set point 1 is Stowed
+    public static final double LIFT_HEIGHT_2 = 7.0;   //set point 2 is L2
 
     public static final double   kElevatorGearing         = 12.0;
     public static final double   kElevatorSproketTeeth    = 22;
