@@ -56,7 +56,7 @@ public class AutoAlignAlgae extends Command{
             mult = (alliance == Alliance.Red) ? -1.0 : 1.0;
         });
 
-        targetPose = Vision.getInstance().getBestReefPose();
+        //targetPose = Vision.getInstance().getBestReefPose();
 
         currentPose = Swerve.getInstance().getState().Pose;
         double velocity = mult * projection(new Translation2d(Swerve.getInstance().getState().Speeds.vxMetersPerSecond, Swerve.getInstance().getState().Speeds.vyMetersPerSecond), targetPose.getTranslation().minus(currentPose.getTranslation()));
@@ -73,7 +73,7 @@ public class AutoAlignAlgae extends Command{
 
     @Override
     public void execute() {
-        targetPose = Vision.getInstance().getBestReefPose();
+        //targetPose = Vision.getInstance().getBestReefPose();
 
         currentPose = Swerve.getInstance().getState().Pose;
         distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());

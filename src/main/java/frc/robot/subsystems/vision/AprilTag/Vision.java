@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Vision extends SubsystemBase{
+    /* 
     private VisionIO io[];
     private VisionIOInputsAutoLogged inputs[];
     private boolean[] shouldUpdate = new boolean[] {true, true};
@@ -140,4 +141,5 @@ public class Vision extends SubsystemBase{
             }
         }
     }
+        */
 }

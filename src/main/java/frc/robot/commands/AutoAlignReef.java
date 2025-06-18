@@ -66,7 +66,7 @@ public class AutoAlignReef extends Command {
         });
 
         isScoringLeft = OIConstants.isScoringLeft;
-        reefScoringPose = Vision.getInstance().getBestReefPose();
+       // reefScoringPose = Vision.getInstance().getBestReefPose();
         
         offset = getScoringPositionOffset(isScoringLeft);
         targetPose = reefScoringPose.plus(new Transform2d(0, offset, new Rotation2d(0)));
@@ -87,7 +87,7 @@ public class AutoAlignReef extends Command {
     @Override
     public void execute() {
         isScoringLeft = constants.OIConstants.isScoringLeft;
-        reefScoringPose = Vision.getInstance().getBestReefPose();
+        //reefScoringPose = Vision.getInstance().getBestReefPose();
         
         offset = getScoringPositionOffset(isScoringLeft);
         targetPose = reefScoringPose.plus(new Transform2d(0, offset, new Rotation2d(0)));

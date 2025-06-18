@@ -14,6 +14,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -55,6 +57,7 @@ import frc.robot.subsystems.vision.AprilTag.VisionIOReal;
 import frc.robot.subsystems.vision.AprilTag.VisionIOSim;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.Climb;
+import frc.robot.subsystems.LED;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -84,24 +87,47 @@ public class RobotContainer {
 
   public int autoScoreMode = 1;
 
+  private AddressableLED m_led;
+  private AddressableLEDBuffer m_ledBuffer;
+
+  private boolean isRed = false;
+
   LoggedDashboardChooser<Command> autoChooser;
 
+
+
   public RobotContainer() throws IOException, ParseException {
+            // Initialize the LED on PWM port 9
+        m_led = new AddressableLED(9);
+
+        // Reuse buffer
+        // Default to a length of 150, start empty output
+        m_ledBuffer = new AddressableLEDBuffer(150);
+        m_led.setLength(m_ledBuffer.getLength());
+
+        // Set the data
+        m_led.setData(m_ledBuffer);
+        m_led.start();
+        //setColor(255, 0, 0); // Set to red
+        for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+          m_ledBuffer.setRGB(i, 255, 255, 255);
+      }
+      m_led.setData(m_ledBuffer);
     GenericRequirement.initialize();
     switch (constants.currentMode) {
       case REAL:
         drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
-        vision = Vision.initialize(
-          new VisionIOReal(0), 
-          new VisionIOReal(1)
-        );  
+        //vision = Vision.initialize(
+        //  new VisionIOReal(0), 
+        //  new VisionIOReal(1)
+        //);  
         break;
 
       case SIM:
         drivetrain = Swerve.initialize(TunerConstants.createDrivetrain());
         visualizer = new RobotVisualizer();
         if(constants.visonSimEnabled) {
-          vision = Vision.initialize(new VisionIOSim());
+        //  vision = Vision.initialize(new VisionIOSim());
         }
         break;
 
@@ -200,7 +226,20 @@ public class RobotContainer {
      return autoChooser.get();
   }
 
-  public void periodic() {
+  public void setColor(int r, int g, int b) {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+        m_ledBuffer.setRGB(i, r, g, b);
+    }
+    m_led.setData(m_ledBuffer);
+}
 
+  public void periodic() {
+      if (isRed) {
+          setColor(255, 0, 0); // Set to red
+      } else {
+          setColor(0, 0, 255); // Set to blue
+      }
+      isRed = !isRed; // Toggle the color state
+    
   }
 }
