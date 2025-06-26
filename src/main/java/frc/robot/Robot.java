@@ -73,7 +73,7 @@ public class Robot extends LoggedRobot {
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(42));
 
 
-    m_orchestra.loadMusic("macerena.chrp");
+    m_orchestra.loadMusic("sb.chrp");
   }
 
   @Override
@@ -110,7 +110,11 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {    
+  if (!m_orchestra.isPlaying()) {
+    m_orchestra.play();
+  }
+}
 
   @Override
   public void teleopExit() {}
@@ -122,9 +126,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testPeriodic() {
-    if (!m_orchestra.isPlaying()) {
-      m_orchestra.play();
-    }
+
   }
 
   @Override
