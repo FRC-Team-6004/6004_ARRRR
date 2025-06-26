@@ -7,7 +7,6 @@ package frc.robot;
 import java.io.IOException;
 
 import org.json.simple.parser.ParseException;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -16,19 +15,14 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbPos1;
-import frc.robot.commands.ClimbPos2;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.ElevatorSetPos1;
 import frc.robot.commands.ElevatorSetPos2;
@@ -42,8 +36,6 @@ import frc.robot.commands.PivotPos0;
 import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
-import frc.robot.commands.PivotTimedRev;
-import frc.robot.commands.RunL1;
 import frc.robot.commands.Testthrow;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climb;
@@ -54,13 +46,8 @@ import frc.robot.subsystems.PivotSub;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.vision.AprilTag.Vision;
-import frc.robot.subsystems.vision.AprilTag.VisionIOReal;
-import frc.robot.subsystems.vision.AprilTag.VisionIOSim;
 import frc.robot.util.NamedCommandManager;
-import frc.robot.subsystems.Climb;
-import frc.robot.subsystems.LED;
-import com.ctre.phoenix6.*; // Import the Orchestra class
-import com.ctre.phoenix6.hardware.ParentDevice;
+
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -93,9 +80,7 @@ public class RobotContainer {
 
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
-
-  private boolean isRed = false;
-
+  
   LoggedDashboardChooser<Command> autoChooser;
 
 
@@ -242,8 +227,8 @@ public class RobotContainer {
  int c = 0;
   public void periodic() {
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
-        edu.wpi.first.wpilibj.DriverStation.getMatchTime() > 0) {
-      rainbow();
+        edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -2) {
+      fox();
     } else {
       if (grabSubsystem.CoralDetect) {
         if ((c < 5) || (c < 15 && c > 10)) {
@@ -275,6 +260,21 @@ public class RobotContainer {
     }
     m_led.setData(m_ledBuffer);
     c += 1;
+  }
+
+  public void fox() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      if ((int) (((i + c) / 5) % 3) == 0) {
+        m_ledBuffer.setRGB(i, 255, 40, 0); // Orange for even indices
+      } else if ((int) (((i + c) / 5) % 3) == 1) {
+        m_ledBuffer.setRGB(i, 255, 255, 255); // White for odd indices
+      } else {
+        m_ledBuffer.setRGB(i, 2, 10, 10); // White for odd indices
+
+      }
+    }
+    m_led.setData(m_ledBuffer);
+    c++;
   }
 
 
