@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoCommands;
@@ -58,6 +59,8 @@ import frc.robot.subsystems.vision.AprilTag.VisionIOSim;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.LED;
+import com.ctre.phoenix6.*; // Import the Orchestra class
+import com.ctre.phoenix6.hardware.ParentDevice;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -112,8 +115,10 @@ public class RobotContainer {
         //setColor(255, 0, 0); // Set to red
         for (int i = 0; i < m_ledBuffer.getLength(); i++) {
           m_ledBuffer.setRGB(i, 255, 255, 255);
+          
       }
       m_led.setData(m_ledBuffer);
+
     GenericRequirement.initialize();
     switch (constants.currentMode) {
       case REAL:
@@ -135,8 +140,10 @@ public class RobotContainer {
       default:
         drivetrain = Swerve.initialize(TunerConstants.createDrivetrain());
         break;
+
     }
-    
+
+
 
     NamedCommandManager.registerNamedCommands();
 
@@ -217,7 +224,6 @@ public class RobotContainer {
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-
     
 
     drivetrain.registerTelemetry(logger::telemeterize);
@@ -270,4 +276,10 @@ public class RobotContainer {
     m_led.setData(m_ledBuffer);
     c += 1;
   }
+
+
+public void initializeOrchestra() {
+
+
+}
 }

@@ -14,12 +14,14 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.ctre.phoenix6.Orchestra;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.LocalADStarAK;
 
 public class Robot extends LoggedRobot {
+  Orchestra m_orchestra = new Orchestra();
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -57,6 +59,21 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit(){
     Pathfinding.setPathfinder(new LocalADStarAK());
+
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(11));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(12));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(13));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(14));  
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(15));  
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(16));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(18));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(30));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(42));
+
+
+    m_orchestra.loadMusic("macerena.chrp");
   }
 
   @Override
@@ -86,6 +103,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
+    m_orchestra.play();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -103,7 +121,11 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    if (!m_orchestra.isPlaying()) {
+      m_orchestra.play();
+    }
+  }
 
   @Override
   public void testExit() {}
