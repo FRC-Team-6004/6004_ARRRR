@@ -19,7 +19,7 @@ import com.ctre.phoenix6.hardware.CANrange;
 public class GrabSub extends SubsystemBase {
     TalonFX intakeGrab;
     double CANrangeDistance;
-
+    public boolean CoralDetect = false;
 
     /**
      * This subsytem that controls the arm.
@@ -41,20 +41,10 @@ public class GrabSub extends SubsystemBase {
 
     @Override
     public void periodic() {
-     /*   int cantime = 0;
-       CANrange CANrange = new CANrange(1);
-       CANrangeDistance = CANrange.getDistance().getValueAsDouble();
-       boolean CANdetects = CANrange.getIsDetected().getValue();
-       if (CANdetects && CANrangeDistance <= .04 && CANrangeDistance >= .023) {
-        intakeGrab.set(-0.05);
-       } else {
-        intakeGrab.set(0);
-        cantime = 0;
-        System.out.println(CANrangeDistance);
-       }
-        
-     */
-         
+
+        CANrange CANrange = new CANrange(1);
+        CoralDetect = CANrange.getIsDetected().getValue();
+             
     }
     /** 
      * This is a method that makes the arm move at your desired speed

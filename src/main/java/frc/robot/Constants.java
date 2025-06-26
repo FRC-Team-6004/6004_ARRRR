@@ -103,7 +103,7 @@ public class constants {
       public static final double INTAKE_POSITION_STATUS_FRAME = 0.05;
       public static final double INTAKE_VELOCITY_STATUS_FRAME = 0.01; 
       
-      public static final double PIVOT_POS_0 = 0;
+      public static final double PIVOT_POS_0 = 0.1;
       public static final double PIVOT_POS_1 = 1.5;
       public static final double PIVOT_POS_2 = 4;  
       public static final double PIVOT_POS_3 = 15;  

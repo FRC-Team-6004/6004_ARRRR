@@ -67,6 +67,7 @@ public class RobotContainer {
   private final Elevator elevatorSubsystem = new Elevator();
   private CommandXboxController op = new CommandXboxController(1);
   private CommandXboxController joystick = new CommandXboxController(0);
+
     public final PivotSub pivotSubsystem = new PivotSub();
     public final GrabSub grabSubsystem = new GrabSub();
     public final Climb climbSubsystem = new Climb();
@@ -102,7 +103,7 @@ public class RobotContainer {
 
         // Reuse buffer
         // Default to a length of 150, start empty output
-        m_ledBuffer = new AddressableLEDBuffer(150);
+        m_ledBuffer = new AddressableLEDBuffer(300 - 38);
         m_led.setLength(m_ledBuffer.getLength());
 
         // Set the data
@@ -232,14 +233,41 @@ public class RobotContainer {
     }
     m_led.setData(m_ledBuffer);
 }
-
+ int c = 0;
   public void periodic() {
-      if (isRed) {
-          setColor(255, 0, 0); // Set to red
+    if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
+        edu.wpi.first.wpilibj.DriverStation.getMatchTime() > 0) {
+      rainbow();
+    } else {
+      if (grabSubsystem.CoralDetect) {
+        if ((c < 5) || (c < 15 && c > 10)) {
+          setColor(0, 0, 0);
+        } else {
+          setColor(0, 255, 0);
+        }
+        c++;
       } else {
-          setColor(0, 0, 255); // Set to blue
+        setColor(255, 0, 0);
+        c = 0;
       }
-      isRed = !isRed; // Toggle the color state
-    
+    }
+  }
+
+  public int ranI() {
+    return (int) (Math.random() * 255);
+  }
+
+  public void rainbow() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      int hue = (c * 3 + (i * 360 / m_ledBuffer.getLength())) % 360; // Faster and smoother rainbow effect
+      double wave = Math.sin((c + i) * 0.2) * 0.5 + 0.5; // Wave-like pulsating brightness
+      double sparkle = Math.random() < 0.02 ? 1.0 : wave; // Add occasional sparkles
+      int r = (int) (Math.sin(0.024 * hue + 0) * 100 * sparkle + 100); // Reduced brightness
+      int g = (int) (Math.sin(0.024 * hue + 2) * 100 * sparkle + 100); // Reduced brightness
+      int b = (int) (Math.sin(0.024 * hue + 4) * 100 * sparkle + 100); // Reduced brightness
+      m_ledBuffer.setRGB(i, r, g, b);
+    }
+    m_led.setData(m_ledBuffer);
+    c += 1;
   }
 }

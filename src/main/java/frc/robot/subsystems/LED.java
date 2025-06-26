@@ -16,7 +16,7 @@ public class LED {
 
         // Reuse buffer
         // Default to a length of 150, start empty output
-        m_ledBuffer = new AddressableLEDBuffer(60);
+        m_ledBuffer = new AddressableLEDBuffer(300);
         m_led.setLength(m_ledBuffer.getLength());
 
         // Set the data
@@ -24,6 +24,7 @@ public class LED {
         m_led.start();
         setColor(255, 0, 0); // Set to red
     }
+    
         // Method to set the LED color
         public void setColor(int r, int g, int b) {
             for (int i = 0; i < m_ledBuffer.getLength(); i++) {
@@ -31,16 +32,11 @@ public class LED {
             }
             m_led.setData(m_ledBuffer);
         }
-    
+        int c = 0;
         // Periodic method to toggle between red and blue
         public void periodic() {
-            if (isRed) {
-                setColor(255, 0, 0); // Set to red
-            } else {
-                setColor(0, 0, 255); // Set to blue
-            }
-            isRed = !isRed; // Toggle the color state
-            
+            setColor(c, c, c); 
+            c = (c + 1) % 255;
         }
  
 }
