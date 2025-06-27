@@ -57,6 +57,8 @@ public class RobotContainer {
   private final Elevator elevatorSubsystem = new Elevator();
   private CommandXboxController op = new CommandXboxController(1);
   private CommandXboxController joystick = new CommandXboxController(0);
+  private CommandXboxController tesController = new CommandXboxController(2);
+
 
     public final PivotSub pivotSubsystem = new PivotSub();
     public final GrabSub grabSubsystem = new GrabSub();
@@ -224,7 +226,7 @@ public class RobotContainer {
     }
     m_led.setData(m_ledBuffer);
 }
- int c = 0;
+ double c = 0;
   public void periodic() {
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -2) {
@@ -250,7 +252,7 @@ public class RobotContainer {
 
   public void rainbow() {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-      int hue = (c * 3 + (i * 360 / m_ledBuffer.getLength())) % 360; // Faster and smoother rainbow effect
+      int hue = (int) (c * 9 + (i * 360 / m_ledBuffer.getLength())) % 360; // Faster and smoother rainbow effect
       double wave = Math.sin((c + i) * 0.2) * 0.5 + 0.5; // Wave-like pulsating brightness
       double sparkle = Math.random() < 0.02 ? 1.0 : wave; // Add occasional sparkles
       int r = (int) (Math.sin(0.024 * hue + 0) * 100 * sparkle + 100); // Reduced brightness
@@ -274,9 +276,19 @@ public class RobotContainer {
       }
     }
     m_led.setData(m_ledBuffer);
-    c++;
+    c += 0.5;
   }
 
+  public void test() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      if (i <= (m_ledBuffer.getLength() * tesController.getRightTriggerAxis())) {
+        m_ledBuffer.setRGB(i, 255, 255, 255); // White for odd indices
+      } else {
+        m_ledBuffer.setRGB(i, 2, 10, 10); // White for odd indices
+      }
+    }
+    System.out.println(m_ledBuffer.getLength() * tesController.getRightTriggerAxis());
+  }
 
 public void initializeOrchestra() {
 

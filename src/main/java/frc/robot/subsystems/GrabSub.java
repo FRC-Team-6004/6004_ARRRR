@@ -9,6 +9,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
@@ -34,16 +36,17 @@ public class GrabSub extends SubsystemBase {
         intakeGrabConfiguration.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         //set up CANrange with an Id of 1 and no canbus specifications
-        CANrange CANrange = new CANrange(1);
-        CANrangeConfiguration CANrangeConfigs = new CANrangeConfiguration();
-        CANrangeDistance = CANrange.getDistance().getValueAsDouble();
+        //CANrange CANrange = new CANrange(1);
+        //CANrangeConfiguration CANrangeConfigs = new CANrangeConfiguration();
+        //CANrangeDistance = CANrange.getDistance().getValueAsDouble();
     } 
+    DigitalInput beam_break = new DigitalInput(9);
 
     @Override
     public void periodic() {
 
-        CANrange CANrange = new CANrange(1);
-        CoralDetect = CANrange.getIsDetected().getValue();
+        CoralDetect = beam_break.get();
+        //System.out.println(CoralDetect);
              
     }
     /** 
