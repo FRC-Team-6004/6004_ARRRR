@@ -88,6 +88,7 @@ public class RobotContainer {
 
 
   public RobotContainer() throws IOException, ParseException {
+    /* 
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
 
@@ -105,6 +106,7 @@ public class RobotContainer {
           
       }
       m_led.setData(m_ledBuffer);
+      */
 
     GenericRequirement.initialize();
     switch (constants.currentMode) {
@@ -220,6 +222,7 @@ public class RobotContainer {
      return autoChooser.get();
   }
 
+  /* 
   public void setColor(int r, int g, int b) {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
         m_ledBuffer.setRGB(i, r, g, b);
@@ -289,8 +292,8 @@ public class RobotContainer {
     }
     System.out.println(m_ledBuffer.getLength() * tesController.getRightTriggerAxis());
   }
+  */
 
-public void initializeOrchestra() {
 
 
 }

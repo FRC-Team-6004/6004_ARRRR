@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.LocalADStarAK;
 
 public class Robot extends LoggedRobot {
-  Orchestra m_orchestra = new Orchestra();
+  //Orchestra m_orchestra = new Orchestra();
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -60,6 +60,7 @@ public class Robot extends LoggedRobot {
   public void robotInit(){
     Pathfinding.setPathfinder(new LocalADStarAK());
 
+    /* 
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(11));
@@ -74,6 +75,8 @@ public class Robot extends LoggedRobot {
 
 
     m_orchestra.loadMusic("sb.chrp");
+    */
+
   }
 
   @Override
@@ -103,18 +106,15 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    m_orchestra.play();
+    /*m_orchestra.play();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+      */
   }
 
   @Override
-  public void teleopPeriodic() {    
-  if (!m_orchestra.isPlaying()) {
-    m_orchestra.play();
-  }
-}
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopExit() {}
