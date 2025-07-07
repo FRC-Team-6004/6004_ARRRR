@@ -43,16 +43,19 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
 import frc.robot.subsystems.GrabSub;
 import frc.robot.subsystems.PivotSub;
+import frc.robot.subsystems.Vision2;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.vision.AprilTag.Vision;
 import frc.robot.util.NamedCommandManager;
+import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
 
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
   private Vision vision;
-  
+  private final Vision2 vision2;
+
   
   private final Elevator elevatorSubsystem = new Elevator();
   private CommandXboxController op = new CommandXboxController(1);
@@ -88,6 +91,15 @@ public class RobotContainer {
 
 
   public RobotContainer() throws IOException, ParseException {
+
+            // Load the official Reefscape AprilTag layout
+            var fieldLayout = new OfficialReefscapeFieldLayout(
+              OfficialReefscapeFieldLayout.FieldType.WELDED
+          );
+  
+          // Pass it into your Vision2 subsystem
+          vision2 = new Vision2(fieldLayout);
+  
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
 
@@ -144,9 +156,9 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-constants.OIConstants.driverController.getLeftY() * -.5 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-constants.OIConstants.driverController.getLeftX() * -0.5 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .3 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
+          .applyRequest(() -> drive.withVelocityX(-xs * -.25 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-ys * -0.25 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
     constants.OIConstants.driverController.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -227,7 +239,20 @@ public class RobotContainer {
     m_led.setData(m_ledBuffer);
 }
  double c = 0;
+ double xs = 0;
+ double ys = 0;
   public void periodic() {
+    
+    xs += joystick.getLeftY();
+    ys += joystick.getLeftX();
+    xs *= .8;
+    ys *= .8;
+
+    /* 
+    xs = joystick.getLeftY();
+    ys = joystick.getLeftX();
+    */
+
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -2) {
       fox();
@@ -271,7 +296,7 @@ public class RobotContainer {
       } else if ((int) (((i + c) / 5) % 3) == 1) {
         m_ledBuffer.setRGB(i, 255, 255, 255); // White for odd indices
       } else {
-        m_ledBuffer.setRGB(i, 2, 10, 10); // White for odd indices
+        m_ledBuffer.setRGB(i, 2, 10, 10); // Gray for odd indices
 
       }
     }

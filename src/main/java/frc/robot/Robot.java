@@ -18,7 +18,11 @@ import com.ctre.phoenix6.Orchestra;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Vision2;
 import frc.robot.util.LocalADStarAK;
+
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 
 public class Robot extends LoggedRobot {
   Orchestra m_orchestra = new Orchestra();
@@ -59,7 +63,15 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit(){
     Pathfinding.setPathfinder(new LocalADStarAK());
-
+AprilTagFieldLayout layout;
+try {
+    layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.kDefaultField.m_resourceFile);
+} catch (IOException e) {
+    e.printStackTrace();
+    layout = null; // Handle the error gracefully
+}
+Vision2 vision = new Vision2(layout);
+    
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(11));
@@ -74,6 +86,7 @@ public class Robot extends LoggedRobot {
 
 
     m_orchestra.loadMusic("sb.chrp");
+    
   }
 
   @Override
@@ -103,17 +116,14 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    m_orchestra.play();
+    //m_orchestra.play();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
   }
 
   @Override
-  public void teleopPeriodic() {    
-  if (!m_orchestra.isPlaying()) {
-    m_orchestra.play();
-  }
+  public void teleopPeriodic() {   
 }
 
   @Override
