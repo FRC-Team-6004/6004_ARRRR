@@ -31,7 +31,7 @@ public class Robot extends LoggedRobot {
   private final RobotContainer m_robotContainer;
 
   public Robot() throws IOException, ParseException {
-    Logger.recordMetadata("ProjectName", "2025-Reefscape");
+    Logger.recordMetadata("Robot", "Nemo");
     switch (constants.currentMode) {
       case REAL:
         Logger.addDataReceiver(new WPILOGWriter());
@@ -63,14 +63,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit(){
     Pathfinding.setPathfinder(new LocalADStarAK());
-AprilTagFieldLayout layout;
-try {
-    layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.kDefaultField.m_resourceFile);
-} catch (IOException e) {
-    e.printStackTrace();
-    layout = null; // Handle the error gracefully
-}
-Vision2 vision = new Vision2(layout);
+
     
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));

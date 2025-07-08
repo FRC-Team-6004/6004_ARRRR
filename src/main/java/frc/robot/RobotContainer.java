@@ -49,7 +49,12 @@ import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.vision.AprilTag.Vision;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
+import frc.robot.commands.ElevatorCommands;
 
+
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.geometry.Pose3d;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -67,6 +72,7 @@ public class RobotContainer {
     public final GrabSub grabSubsystem = new GrabSub();
     public final Climb climbSubsystem = new Climb();
 
+    private final Pose3d visionPose = new Pose3d(); // Replace with Pose3d or another suitable type
 
   // private final Vision vision;
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -191,11 +197,11 @@ public class RobotContainer {
     constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
     constants.OIConstants.driverController.rightTrigger(0.5).onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
 
-   op.povDown().onTrue(new ElevatorSetPos1(elevatorSubsystem));
+   op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 1)
+   .andThen(new PivotPos0(pivotSubsystem))));
    op.povLeft().onTrue(new ElevatorSetPos2(elevatorSubsystem));
    op.povRight().onTrue(new ElevatorSetPos3(elevatorSubsystem));
    op.povUp().onTrue(new ElevatorSetPos4(elevatorSubsystem));
-   op.povDown().onTrue(new PivotPos1(pivotSubsystem));
    op.povLeft().onTrue(new PivotPos1(pivotSubsystem));
    op.povRight().onTrue(new PivotPos1(pivotSubsystem));
    op.povUp().onTrue(new PivotPos2(pivotSubsystem));
@@ -252,6 +258,12 @@ public class RobotContainer {
     xs = joystick.getLeftY();
     ys = joystick.getLeftX();
     */
+
+    vision2.getFieldPosition().ifPresentOrElse(
+      pose -> Logger.recordOutput("Vision/RobotPose", pose),
+      () -> Logger.recordOutput("Vision/RobotPose", new Pose3d()) // Or omit if no pose
+  );
+
 
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -2) {
