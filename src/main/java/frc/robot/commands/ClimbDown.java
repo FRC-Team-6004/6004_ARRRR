@@ -34,7 +34,7 @@ public class ClimbDown extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_elevator.moveClimb(-1);
+    m_elevator.moveClimb(1);
     //System.out.print("run pid elev");
   }
 

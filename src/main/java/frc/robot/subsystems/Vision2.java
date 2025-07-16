@@ -28,13 +28,13 @@ public class Vision2 {
 
     // Camera offsets relative to the robot's center (adjust as needed)
     private final Transform3d leftCameraOffset = new Transform3d(
-        new Translation3d(-11.625, 10.125, 7.875),
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(-60))
+        new Translation3d(-11.625, -10.125, 7.875), // Flipped y-axis
+        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(-60)) // Adjusted yaw
     );
 
     private final Transform3d rightCameraOffset = new Transform3d(
-        new Translation3d(-11.625, 9.875, 7.875),
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(60))
+        new Translation3d(-11.625, -9.875, 7.875), // Flipped y-axis
+        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(60)) // Adjusted yaw
     );
 
     public Vision2(OfficialReefscapeFieldLayout fieldLayout) {

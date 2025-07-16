@@ -199,22 +199,16 @@ public class RobotContainer {
 
    op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 1)
    .andThen(new PivotPos0(pivotSubsystem))));
-   op.povLeft().onTrue(new ElevatorSetPos2(elevatorSubsystem));
-   op.povRight().onTrue(new ElevatorSetPos3(elevatorSubsystem));
-   op.povUp().onTrue(new ElevatorSetPos4(elevatorSubsystem));
-   op.povLeft().onTrue(new PivotPos1(pivotSubsystem));
-   op.povRight().onTrue(new PivotPos1(pivotSubsystem));
-   op.povUp().onTrue(new PivotPos2(pivotSubsystem));
-   op.leftStick().onTrue(new PivotPos0(pivotSubsystem));
+   op.povLeft().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)));
+   op.povRight().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 3)));
+   op.povUp().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 4)
+   .andThen(new PivotPos2(pivotSubsystem))));
 
-    op.a().onTrue(new ElevatorSetPos2(elevatorSubsystem));
-    op.y().onTrue(new ElevatorSetPos4(elevatorSubsystem));
-    op.x().onTrue(new ElevatorSetPos5(elevatorSubsystem));
-    op.b().onTrue(new ElevatorSetPos6(elevatorSubsystem));
-    op.a().onTrue(new PivotPos3(pivotSubsystem));
-    op.b().onTrue(new PivotPos3(pivotSubsystem));
-    op.x().onTrue(new PivotPos3(pivotSubsystem));
-    op.y().onTrue(new PivotPos3(pivotSubsystem));       
+    op.a().onTrue(new PivotPos3(pivotSubsystem).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)));
+    op.y().onTrue(new PivotPos3(pivotSubsystem).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 4)));
+    op.x().onTrue(new PivotPos3(pivotSubsystem).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 5)));
+    op.b().onTrue(new PivotPos3(pivotSubsystem).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 6)));
+     
     
     op.rightBumper().onTrue(new Barge(grabSubsystem, pivotSubsystem));
     op.leftBumper().onTrue(new Testthrow(grabSubsystem, pivotSubsystem));
