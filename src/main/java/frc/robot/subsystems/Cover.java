@@ -21,13 +21,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 public class Cover extends SubsystemBase {
     TalonFX motor;
-    double CANrangeDistance;
-
 
     /**
      * This subsytem that controls the arm.
      */
-    public Cover () {
+    public Cover() {
         motor = new TalonFX(CoverConstants.MotorID);
         
         var motorConfig = new TalonFXConfiguration();
@@ -36,19 +34,20 @@ public class Cover extends SubsystemBase {
         motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+        // Apply the motor configuration
+        motor.getConfigurator().apply(motorConfig);
     } 
 
     @Override
     public void periodic() {
-        /* 
-        if (DriverStation.getMatchTime() < 20) {
-            if (DriverStation.getMatchTime() > 10) {
+        double matchTime = edu.wpi.first.wpilibj.DriverStation.getMatchTime();
+        if (matchTime < 15) {
+            if (matchTime > 13) {
                 motor.set(CoverConstants.SPEED);
             } else {
-                motor.set(CoverConstants.HOLD);
+                motor.set(0);
             }
         }
-        */
     }
     /** 
      * This is a method that makes the arm move at your desired speed
@@ -56,7 +55,7 @@ public class Cover extends SubsystemBase {
      * 
      * @param speed motor speed from -1.0 to 1, with 0 stopping it
      */
-    public void moveGrab(double speed){
+    public void moveCover(double speed){
         motor.set(speed);
 
     }

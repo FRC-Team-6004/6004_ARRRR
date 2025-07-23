@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -15,7 +16,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.OIConstants;
@@ -50,7 +53,7 @@ import frc.robot.subsystems.vision.AprilTag.Vision;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
 import frc.robot.commands.ElevatorCommands;
-
+import frc.robot.subsystems.Cover;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
@@ -71,6 +74,7 @@ public class RobotContainer {
     public final PivotSub pivotSubsystem = new PivotSub();
     public final GrabSub grabSubsystem = new GrabSub();
     public final Climb climbSubsystem = new Climb();
+    public final Cover coverSubsystem = new Cover();
 
     private final Pose3d visionPose = new Pose3d(); // Replace with Pose3d or another suitable type
 
@@ -123,6 +127,8 @@ public class RobotContainer {
           
       }
       m_led.setData(m_ledBuffer);
+
+        CommandScheduler.getInstance().registerSubsystem(coverSubsystem);
 
     GenericRequirement.initialize();
     switch (constants.currentMode) {
@@ -253,25 +259,39 @@ public class RobotContainer {
     ys = joystick.getLeftX();
     */
 
-    vision2.getFieldPosition().ifPresentOrElse(
-      pose -> Logger.recordOutput("Vision/RobotPose", pose),
-      () -> Logger.recordOutput("Vision/RobotPose", new Pose3d()) // Or omit if no pose
-  );
+    Pose3d robotPose = vision2.getRobotPose();
+    if (robotPose != null && !robotPose.equals(new Pose3d())) {
+        // Log the detected pose
+        Logger.recordOutput("Vision/RobotPose", robotPose);
+        
+        // Optionally log position components separately
+        Logger.recordOutput("Vision/Position_X", robotPose.getX());
+        Logger.recordOutput("Vision/Position_Y", robotPose.getY());
+        Logger.recordOutput("Vision/Position_Z", robotPose.getZ());
+        Logger.recordOutput("Vision/Orientation", robotPose.getRotation());
+    } else {
+        // Log a default pose (origin) if no valid pose is found
+        Logger.recordOutput("Vision/RobotPose", new Pose3d());
+        Logger.recordOutput("Vision/Status", "No pose detected from AprilTags");
+    }
 
 
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
-        edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -2) {
+        edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -1) {
       fox();
     } else {
       if (grabSubsystem.CoralDetect) {
-        if ((c < 5) || (c < 15 && c > 10)) {
+        if ((c < 10) || (c < 30 && c > 20)) {
           setColor(0, 0, 0);
+          joystick.setRumble(RumbleType.kBothRumble, 1);
         } else {
           setColor(0, 255, 0);
+          joystick.setRumble(RumbleType.kBothRumble, 0.0);
         }
         c++;
       } else {
         setColor(255, 0, 0);
+        joystick.setRumble(RumbleType.kBothRumble, 0);
         c = 0;
       }
     }

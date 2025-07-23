@@ -3,89 +3,92 @@ package frc.robot.subsystems;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
 
 import java.util.Optional;
-import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout; // Ensure this is the correct package for the class
 
+public class Vision2 extends SubsystemBase {
 
+    private Pose3d currentRobotPose = new Pose3d();  // Real-time robot pose
 
-
-    // Initialize Vision2 with the provided field layout
-
-public class Vision2 {
-
-    // Cameras
     private final PhotonCamera leftCamera = new PhotonCamera("Front Left");
     private final PhotonCamera rightCamera = new PhotonCamera("Front Right");
 
-    private OfficialReefscapeFieldLayout fieldLayout;
-
-    // Camera offsets relative to the robot's center (adjust as needed)
     private final Transform3d leftCameraOffset = new Transform3d(
-        new Translation3d(-11.625, -10.125, 7.875), // Flipped y-axis
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(-60)) // Adjusted yaw
+        new Translation3d(-0.2956, 0.2572, 0.2),
+        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(-60))
     );
 
     private final Transform3d rightCameraOffset = new Transform3d(
-        new Translation3d(-11.625, -9.875, 7.875), // Flipped y-axis
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(60)) // Adjusted yaw
+        new Translation3d(0.295, 0.2508, 0.2),
+        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(60))
     );
 
-    public Vision2(OfficialReefscapeFieldLayout fieldLayout) {
-        this.fieldLayout = fieldLayout;
-    }
+    private final AprilTagFieldLayout fieldLayout;
 
-    /**
-     * Gets the robot's field position using AprilTags detected by the cameras.
-     *
-     * @return An Optional containing the robot's Pose3d on the field, or empty if no valid tag is detected.
-     */
-    public Optional<Pose3d> getFieldPosition() {
-        Optional<Pose3d> leftPose = getCameraPose(leftCamera, leftCameraOffset);
-        Optional<Pose3d> rightPose = getCameraPose(rightCamera, rightCameraOffset);
+    public Vision2() {
+        fieldLayout = new OfficialReefscapeFieldLayout(
+            OfficialReefscapeFieldLayout.FieldType.WELDED
+        ).getWpilibLayout();    }
 
-        if (leftPose.isPresent()) {
-            return leftPose;
+    @Override
+    public void periodic() {
+        Optional<Pose3d> leftPose = getEstimatedPoseFromCamera(leftCamera, leftCameraOffset);
+        Optional<Pose3d> rightPose = getEstimatedPoseFromCamera(rightCamera, rightCameraOffset);
+
+        if (leftPose.isPresent() && rightPose.isPresent()) {
+            // Simple average if both are available (more sophisticated fusion is also possible)
+            currentRobotPose = averagePose3d(leftPose.get(), rightPose.get());
+        } else if (leftPose.isPresent()) {
+            currentRobotPose = leftPose.get();
         } else if (rightPose.isPresent()) {
-            return rightPose;
+            currentRobotPose = rightPose.get();
         }
-
-        return Optional.empty();
+        // else keep the previous pose
     }
 
-    /**
-     * Gets the robot's pose from a specific camera.
-     *
-     * @param camera The PhotonCamera to use.
-     * @param cameraOffset The Transform3d offset of the camera relative to the robot's center.
-     * @return An Optional containing the robot's Pose3d, or empty if no valid tag is detected.
-     */
-    private Optional<Pose3d> getCameraPose(PhotonCamera camera, Transform3d cameraOffset) {
+    private Optional<Pose3d> getEstimatedPoseFromCamera(PhotonCamera camera, Transform3d cameraOffset) {
         PhotonPipelineResult result = camera.getLatestResult();
+        if (!result.hasTargets()) return Optional.empty();
 
-        if (result.hasTargets()) {
-            PhotonTrackedTarget target = result.getBestTarget();
-            int tagId = target.getFiducialId();
+        PhotonTrackedTarget bestTarget = result.getBestTarget();
+        int fiducialId = bestTarget.getFiducialId();
 
-            Optional<Pose3d> tagPoseOptional = fieldLayout.getTagPose(tagId);
-            if (tagPoseOptional.isPresent()) {
-                Pose3d tagPose = tagPoseOptional.get();
-                Transform3d cameraToTag = target.getBestCameraToTarget();
+        Optional<Pose3d> tagPoseOptional = fieldLayout.getTagPose(fiducialId);
+        if (tagPoseOptional.isEmpty()) return Optional.empty();
 
-                // Compute the robot's pose on the field
-                Pose3d robotPose = tagPose.transformBy(cameraToTag.inverse())
-                                           .transformBy(cameraOffset.inverse());
+        Pose3d tagPose = tagPoseOptional.get();
+        Transform3d camToTag = bestTarget.getBestCameraToTarget();  // 3D transform
 
-                return Optional.of(robotPose);
-            }
-        }
+        // Invert the transform to get Camera pose in field space
+        Pose3d cameraPose = tagPose.transformBy(camToTag.inverse());
 
-        return Optional.empty();
+        // Transform camera pose to robot pose using known offset
+        Pose3d robotPose = cameraPose.transformBy(cameraOffset.inverse());
+
+        return Optional.of(robotPose);
+    }
+
+    public Pose3d getCurrentRobotPose() {
+        return currentRobotPose;
+    }
+
+    private Pose3d averagePose3d(Pose3d a, Pose3d b) {
+        Translation3d avgTranslation = new Translation3d(
+            (a.getX() + b.getX()) / 2.0,
+            (a.getY() + b.getY()) / 2.0,
+            (a.getZ() + b.getZ()) / 2.0
+        );
+
+        Rotation3d avgRotation = new Rotation3d(
+            (a.getRotation().getX() + b.getRotation().getX()) / 2.0,
+            (a.getRotation().getY() + b.getRotation().getY()) / 2.0,
+            (a.getRotation().getZ() + b.getRotation().getZ()) / 2.0
+        );
+
+        return new Pose3d(avgTranslation, avgRotation);
     }
 }

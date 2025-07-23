@@ -112,10 +112,10 @@ public class constants {
   }
 
   public final class CoverConstants {
-    public static final int MotorID=30;
+    public static final int MotorID=42;
 
-    public static final double SPEED= .15;
-    public static final double HOLD= .017;
+    public static final double SPEED= .2;
+    public static final double HOLD= .0;
     public static final InvertedValue INTAKE_INVERSION = InvertedValue.Clockwise_Positive;
     public static final NeutralModeValue INTAKE_NEUTRAL_MODE = NeutralModeValue.Brake;
 
