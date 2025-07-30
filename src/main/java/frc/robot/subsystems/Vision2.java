@@ -1,94 +1,108 @@
 package frc.robot.subsystems;
 
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
-
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.littletonrobotics.junction.Logger;
+import frc.robot.subsystems.swerve.*;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Vision2 extends SubsystemBase {
+    private final PhotonCamera leftCam = new PhotonCamera("Front_Left");
+    private final PhotonCamera rightCam = new PhotonCamera("Front_Right");
 
-    private Pose3d currentRobotPose = new Pose3d();  // Real-time robot pose
-
-    private final PhotonCamera leftCamera = new PhotonCamera("Front Left");
-    private final PhotonCamera rightCamera = new PhotonCamera("Front Right");
-
-    private final Transform3d leftCameraOffset = new Transform3d(
-        new Translation3d(-0.2956, 0.2572, 0.2),
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(-60))
+    private final Transform3d robotToLeftCam = new Transform3d(
+        new edu.wpi.first.math.geometry.Translation3d(-0.2953, 0.2572, 0.2000),
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(15))
     );
 
-    private final Transform3d rightCameraOffset = new Transform3d(
-        new Translation3d(0.295, 0.2508, 0.2),
-        new Rotation3d(0.0, Math.toRadians(15), Math.toRadians(60))
+    private final Transform3d robotToRightCam = new Transform3d(
+        new edu.wpi.first.math.geometry.Translation3d(0.2953, 0.2508, 0.2000),
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(-15))
     );
 
-    private final AprilTagFieldLayout fieldLayout;
+    private final PhotonPoseEstimator leftEstimator;
+    private final PhotonPoseEstimator rightEstimator;
+
+    private Optional<EstimatedRobotPose> latestPose = Optional.empty();
 
     public Vision2() {
-        fieldLayout = new OfficialReefscapeFieldLayout(
-            OfficialReefscapeFieldLayout.FieldType.WELDED
-        ).getWpilibLayout();    }
+        var fieldLayout = OfficialReefscapeFieldLayout.load();
+
+        leftEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.LOWEST_AMBIGUITY, robotToLeftCam);
+        rightEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.LOWEST_AMBIGUITY, robotToRightCam);
+    }
 
     @Override
     public void periodic() {
-        Optional<Pose3d> leftPose = getEstimatedPoseFromCamera(leftCamera, leftCameraOffset);
-        Optional<Pose3d> rightPose = getEstimatedPoseFromCamera(rightCamera, rightCameraOffset);
+        Pose2d currentPose = Swerve.getInstance().getPose();
 
-        if (leftPose.isPresent() && rightPose.isPresent()) {
-            // Simple average if both are available (more sophisticated fusion is also possible)
-            currentRobotPose = averagePose3d(leftPose.get(), rightPose.get());
-        } else if (leftPose.isPresent()) {
-            currentRobotPose = leftPose.get();
-        } else if (rightPose.isPresent()) {
-            currentRobotPose = rightPose.get();
+        leftEstimator.setReferencePose(currentPose);
+        rightEstimator.setReferencePose(currentPose);
+
+        PhotonPipelineResult leftRaw = leftCam.getLatestResult();
+        PhotonPipelineResult rightRaw = rightCam.getLatestResult();
+
+        Logger.recordOutput("Vision2/Left/RawNumTargets", leftRaw.getTargets().size());
+        Logger.recordOutput("Vision2/Right/RawNumTargets", rightRaw.getTargets().size());
+        leftCam.getLatestResult().getTargets().forEach(t ->
+    Logger.recordOutput("Vision2/Left/RawTagID", t.getFiducialId()));
+    leftCam.getLatestResult().getTargets().forEach(t ->
+    Logger.recordOutput("Vision2/Left/Ambiguity", t.getPoseAmbiguity()));
+
+        var leftResult = leftEstimator.update(leftRaw);
+        var rightResult = rightEstimator.update(rightRaw);
+
+        if (leftResult.isPresent() && rightResult.isPresent()) {
+            if (leftResult.get().targetsUsed.size() >= rightResult.get().targetsUsed.size()) {
+                latestPose = leftResult;
+            } else {
+                latestPose = rightResult;
+            }
+        } else if (leftResult.isPresent()) {
+            latestPose = leftResult;
+        } else if (rightResult.isPresent()) {
+            latestPose = rightResult;
         }
-        // else keep the previous pose
+
+        log();
     }
 
-    private Optional<Pose3d> getEstimatedPoseFromCamera(PhotonCamera camera, Transform3d cameraOffset) {
-        PhotonPipelineResult result = camera.getLatestResult();
-        if (!result.hasTargets()) return Optional.empty();
-
-        PhotonTrackedTarget bestTarget = result.getBestTarget();
-        int fiducialId = bestTarget.getFiducialId();
-
-        Optional<Pose3d> tagPoseOptional = fieldLayout.getTagPose(fiducialId);
-        if (tagPoseOptional.isEmpty()) return Optional.empty();
-
-        Pose3d tagPose = tagPoseOptional.get();
-        Transform3d camToTag = bestTarget.getBestCameraToTarget();  // 3D transform
-
-        // Invert the transform to get Camera pose in field space
-        Pose3d cameraPose = tagPose.transformBy(camToTag.inverse());
-
-        // Transform camera pose to robot pose using known offset
-        Pose3d robotPose = cameraPose.transformBy(cameraOffset.inverse());
-
-        return Optional.of(robotPose);
+    public Optional<EstimatedRobotPose> getLatestEstimatedPose() {
+        return latestPose;
     }
 
-    public Pose3d getCurrentRobotPose() {
-        return currentRobotPose;
+    public Optional<Pose2d> getLatestFieldPose() {
+        return latestPose.map(pose -> pose.estimatedPose.toPose2d());
     }
 
-    private Pose3d averagePose3d(Pose3d a, Pose3d b) {
-        Translation3d avgTranslation = new Translation3d(
-            (a.getX() + b.getX()) / 2.0,
-            (a.getY() + b.getY()) / 2.0,
-            (a.getZ() + b.getZ()) / 2.0
-        );
+    public boolean seesTag() {
+        return leftCam.getLatestResult().hasTargets() || rightCam.getLatestResult().hasTargets();
+    }
 
-        Rotation3d avgRotation = new Rotation3d(
-            (a.getRotation().getX() + b.getRotation().getX()) / 2.0,
-            (a.getRotation().getY() + b.getRotation().getY()) / 2.0,
-            (a.getRotation().getZ() + b.getRotation().getZ()) / 2.0
-        );
+    public double getPoseTimestamp() {
+        return latestPose.map(pose -> pose.timestampSeconds).orElse(Timer.getFPGATimestamp());
+    }
 
-        return new Pose3d(avgTranslation, avgRotation);
+    private void log() {
+        Logger.recordOutput("Vision2/HasTag", seesTag());
+
+        if (latestPose.isPresent()) {
+            var estPose = latestPose.get();
+            Logger.recordOutput("Vision2/Pose2d", estPose.estimatedPose.toPose2d());
+            Logger.recordOutput("Vision2/Latency", Timer.getFPGATimestamp() - estPose.timestampSeconds);
+            Logger.recordOutput("Vision2/NumTargetsUsed", estPose.targetsUsed.size());
+        } else {
+            Logger.recordOutput("Vision2/Pose2d", new Pose2d());
+            Logger.recordOutput("Vision2/NumTargetsUsed", 0);
+        }
     }
 }

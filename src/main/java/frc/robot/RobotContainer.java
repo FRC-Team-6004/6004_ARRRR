@@ -54,6 +54,7 @@ import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.Cover;
+import org.photonvision.EstimatedRobotPose;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
@@ -76,7 +77,6 @@ public class RobotContainer {
     public final Climb climbSubsystem = new Climb();
     public final Cover coverSubsystem = new Cover();
 
-    private final Pose3d visionPose = new Pose3d(); // Replace with Pose3d or another suitable type
 
   // private final Vision vision;
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -108,7 +108,7 @@ public class RobotContainer {
           );
   
           // Pass it into your Vision2 subsystem
-          vision2 = new Vision2(fieldLayout);
+          vision2 = new Vision2();
   
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
@@ -168,8 +168,8 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-xs * -.25 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-ys * -0.25 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          .applyRequest(() -> drive.withVelocityX(-xs * -0.25 * .1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-ys * -0.25 * .1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
@@ -259,21 +259,6 @@ public class RobotContainer {
     ys = joystick.getLeftX();
     */
 
-    Pose3d robotPose = vision2.getRobotPose();
-    if (robotPose != null && !robotPose.equals(new Pose3d())) {
-        // Log the detected pose
-        Logger.recordOutput("Vision/RobotPose", robotPose);
-        
-        // Optionally log position components separately
-        Logger.recordOutput("Vision/Position_X", robotPose.getX());
-        Logger.recordOutput("Vision/Position_Y", robotPose.getY());
-        Logger.recordOutput("Vision/Position_Z", robotPose.getZ());
-        Logger.recordOutput("Vision/Orientation", robotPose.getRotation());
-    } else {
-        // Log a default pose (origin) if no valid pose is found
-        Logger.recordOutput("Vision/RobotPose", new Pose3d());
-        Logger.recordOutput("Vision/Status", "No pose detected from AprilTags");
-    }
 
 
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 

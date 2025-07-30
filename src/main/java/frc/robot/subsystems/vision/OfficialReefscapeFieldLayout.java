@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public class OfficialReefscapeFieldLayout {
@@ -35,6 +36,14 @@ public class OfficialReefscapeFieldLayout {
      */
     public Optional<Pose3d> getTagPose(int tagId) {
         return wpilibLayout.getTagPose(tagId);
+    }
+
+    public static AprilTagFieldLayout load() {
+        try {
+            return AprilTagFieldLayout.loadFromResource(AprilTagFields.k2025ReefscapeWelded.m_resourceFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load Reefscape layout", e);
+        }
     }
 
     /**

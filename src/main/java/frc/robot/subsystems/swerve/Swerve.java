@@ -419,6 +419,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     }
 
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
+
 }
 
 
