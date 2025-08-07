@@ -35,7 +35,7 @@ public class ElevatorCommands {
 
         return Commands.runOnce(() -> elevator.setGoal(targetHeight), elevator)
         .andThen(Commands.waitUntil(() -> elevator.atGoal(targetHeight)))
-        .withTimeout(2); // 2 seconds max
+        .withTimeout(1); // 2 seconds max
     
     }
 }

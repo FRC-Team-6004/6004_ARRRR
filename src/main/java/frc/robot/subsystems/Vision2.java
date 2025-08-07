@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -21,12 +22,12 @@ public class Vision2 extends SubsystemBase {
 
     private final Transform3d robotToLeftCam = new Transform3d(
         new edu.wpi.first.math.geometry.Translation3d(-0.2953, 0.2572, 0.2000),
-        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(15))
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(-15))
     );
 
     private final Transform3d robotToRightCam = new Transform3d(
         new edu.wpi.first.math.geometry.Translation3d(0.2953, 0.2508, 0.2000),
-        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(-15))
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(15))
     );
 
     private final PhotonPoseEstimator leftEstimator;

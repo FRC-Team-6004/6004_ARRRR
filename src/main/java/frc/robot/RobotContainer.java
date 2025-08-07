@@ -168,8 +168,8 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-xs * -0.25 * .1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-ys * -0.25 * .1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          .applyRequest(() -> drive.withVelocityX(-xs * -0.25 * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-ys * -0.25 * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
