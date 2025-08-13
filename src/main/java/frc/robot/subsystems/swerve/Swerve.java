@@ -26,6 +26,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
@@ -323,13 +325,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
         }
     }
-    public void setScoringLeft() {
-        OIConstants.isScoringLeft = true;
-    }
-    
-    public void setScoringRight() {
-        OIConstants.isScoringLeft = false;
-    }
+
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
@@ -423,6 +419,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return getState().Pose;
     }
 
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+            getModule(0).getPosition(false),
+            getModule(1).getPosition(false),
+            getModule(2).getPosition(false),
+            getModule(3).getPosition(false)
+        };
+    }
+
+    public Rotation2d getHeading() {
+        return new Rotation2d(getState().Pose.getRotation().getRadians());
+    }
 }
 
 

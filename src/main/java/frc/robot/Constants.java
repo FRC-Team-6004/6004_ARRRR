@@ -7,7 +7,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.vision.AprilTag.VisionConstants;
 
 public class constants {
    public static final boolean tuningMode = false;
@@ -30,11 +29,6 @@ public class constants {
         public static final CommandXboxController operatorController = new CommandXboxController(1);
         public static final double KAxisDeadband = 0.1;  
         public static final double OperatorLAxisDeadband = 0.3;
-        public static boolean isScoringLeft = true;
-        public static boolean aligned = false; 
-        public static boolean inScoringDistance = false;
-        public static boolean isReefTagOnly = true;
-        public static int autoScoreMode = 4;
     }
 
     public static enum Gamepiece {
@@ -44,10 +38,6 @@ public class constants {
         SIM,
     }
 
-    public static final class FieldConstants {
-        public static final double fieldLength = VisionConstants.aprilTagFieldLayout.getFieldLength();
-        public static final double fieldWidth = VisionConstants.aprilTagFieldLayout.getFieldWidth();
-    }
 
     public static final class ElevatorConstants {
         public static final int LIFT_MAIN = 62;             //PWM

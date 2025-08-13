@@ -1,11 +1,11 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -16,18 +16,18 @@ import frc.robot.subsystems.swerve.*;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Vision2 extends SubsystemBase {
+public class Vision extends SubsystemBase {
     private final PhotonCamera leftCam = new PhotonCamera("Front_Left");
     private final PhotonCamera rightCam = new PhotonCamera("Front_Right");
 
     private final Transform3d robotToLeftCam = new Transform3d(
         new edu.wpi.first.math.geometry.Translation3d(-0.2953, 0.2572, 0.2000),
-        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(-15))
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(13), Math.toRadians(-38))
     );
 
     private final Transform3d robotToRightCam = new Transform3d(
         new edu.wpi.first.math.geometry.Translation3d(0.2953, 0.2508, 0.2000),
-        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(20), Math.toRadians(15))
+        new edu.wpi.first.math.geometry.Rotation3d(0.0, Math.toRadians(13), Math.toRadians(31))
     );
 
     private final PhotonPoseEstimator leftEstimator;
@@ -35,7 +35,7 @@ public class Vision2 extends SubsystemBase {
 
     private Optional<EstimatedRobotPose> latestPose = Optional.empty();
 
-    public Vision2() {
+    public Vision() {
         var fieldLayout = OfficialReefscapeFieldLayout.load();
 
         leftEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.LOWEST_AMBIGUITY, robotToLeftCam);
@@ -80,7 +80,9 @@ public class Vision2 extends SubsystemBase {
     public Optional<EstimatedRobotPose> getLatestEstimatedPose() {
         return latestPose;
     }
-
+    public Pose2d getLatestFieldPose2d() {
+        return latestPose.map(pose -> pose.estimatedPose.toPose2d()).orElse(new Pose2d());
+    }
     public Optional<Pose2d> getLatestFieldPose() {
         return latestPose.map(pose -> pose.estimatedPose.toPose2d());
     }
