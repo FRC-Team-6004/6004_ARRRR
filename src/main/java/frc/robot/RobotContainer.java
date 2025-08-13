@@ -14,9 +14,14 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -24,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
-import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
@@ -40,38 +44,55 @@ import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
 import frc.robot.subsystems.GrabSub;
+import frc.robot.subsystems.Pathing;
 import frc.robot.subsystems.PivotSub;
-import frc.robot.subsystems.Vision2;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
-import frc.robot.subsystems.vision.AprilTag.Vision;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.Cover;
 import org.photonvision.EstimatedRobotPose;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
-  private Vision vision;
-  private final Vision2 vision2;
 
-  
-  private final Elevator elevatorSubsystem = new Elevator();
+  //Controllers
   private CommandXboxController op = new CommandXboxController(1);
   private CommandXboxController joystick = new CommandXboxController(0);
   private CommandXboxController tesController = new CommandXboxController(2);
 
-
-    public final PivotSub pivotSubsystem = new PivotSub();
-    public final GrabSub grabSubsystem = new GrabSub();
-    public final Climb climbSubsystem = new Climb();
-    public final Cover coverSubsystem = new Cover();
-
+  //Subsystems
+  private final Elevator elevatorSubsystem = new Elevator();
+  public final PivotSub pivotSubsystem = new PivotSub();
+  public final GrabSub grabSubsystem = new GrabSub();
+  public final Climb climbSubsystem = new Climb();
+  public final Cover coverSubsystem = new Cover();
+  private final Vision vision = new Vision();
+  
+  // Swerve drivetrain
+  public final Swerve swerve = new Swerve(
+      TunerConstants.DrivetrainConstants,
+      50, // odometry update frequency
+      TunerConstants.FrontLeft,
+      TunerConstants.FrontRight,
+      TunerConstants.BackLeft,
+      TunerConstants.BackRight
+  );
+  
+  public final Pathing pathing;
 
   // private final Vision vision;
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -98,16 +119,6 @@ public class RobotContainer {
 
   public RobotContainer() throws IOException, ParseException {
 
-            // Load the official Reefscape AprilTag layout
-            var fieldLayout = new OfficialReefscapeFieldLayout(
-              OfficialReefscapeFieldLayout.FieldType.WELDED
-          );
-
-
-
-  
-          // Pass it into your Vision2 subsystem
-          vision2 = new Vision2();
   
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
@@ -130,36 +141,22 @@ public class RobotContainer {
         CommandScheduler.getInstance().registerSubsystem(coverSubsystem);
 
     GenericRequirement.initialize();
-    switch (constants.currentMode) {
-      case REAL:
-        drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
-        //vision = Vision.initialize(
-        //  new VisionIOReal(0), 
-        //  new VisionIOReal(1)
-        //);  
-        break;
-
-      case SIM:
-        drivetrain = Swerve.initialize(TunerConstants.createDrivetrain());
-        visualizer = new RobotVisualizer();
-        if(constants.visonSimEnabled) {
-        //  vision = Vision.initialize(new VisionIOSim());
-        }
-        break;
-
-      default:
-        drivetrain = Swerve.initialize(TunerConstants.createDrivetrain());
-        break;
-
-    }
-
-
+    drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
 
     NamedCommandManager.registerNamedCommands();
 
     autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
     
     configureBindings();
+
+    pathing = new Pathing(
+      swerve.getKinematics(),
+      swerve.getHeading(),
+      swerve.getModulePositions(),
+      new Pose2d(0, 0, new Rotation2d(0)),
+      null,     // AutoBuilder reference; Pathing can call swerve.configureAutoBuilder() internally if needed
+      vision
+  );
     
   }
 
@@ -173,30 +170,6 @@ public class RobotContainer {
 
     // field center
     constants.OIConstants.driverController.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-    
-    // Change reef scoring stem
-    OIConstants.driverController.leftBumper().onTrue(
-        Commands.runOnce(() -> drivetrain.setScoringLeft()
-      ));
-    OIConstants.driverController.rightBumper().onTrue(
-        Commands.runOnce(() -> drivetrain.setScoringRight()
-      ));
-
-    // Right reef align
-    constants.OIConstants.driverController.rightBumper().whileTrue(
-      AutoCommands.alignReefUntil()
-      );
-    
-    // Left reef align
-    constants.OIConstants.driverController.leftBumper().whileTrue(
-       AutoCommands.alignReefUntil()
-    );
-
-    // Algea align
-   constants.OIConstants.driverController.a().whileTrue(
-    AutoCommands.alignAlgae()
-   );
 
     // Slow mode
     constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
