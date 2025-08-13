@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -27,12 +28,6 @@ import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
-import frc.robot.commands.ElevatorSetPos1;
-import frc.robot.commands.ElevatorSetPos2;
-import frc.robot.commands.ElevatorSetPos3;
-import frc.robot.commands.ElevatorSetPos4;
-import frc.robot.commands.ElevatorSetPos5;
-import frc.robot.commands.ElevatorSetPos6;
 import frc.robot.commands.GrabIn;
 import frc.robot.commands.GrabOut;
 import frc.robot.commands.PivotPos0;
@@ -98,7 +93,8 @@ public class RobotContainer {
   
   LoggedDashboardChooser<Command> autoChooser;
 
-
+  double speedDecay = .8;
+  double maxN = speedDecay / (1 - speedDecay);
 
   public RobotContainer() throws IOException, ParseException {
 
@@ -106,6 +102,9 @@ public class RobotContainer {
             var fieldLayout = new OfficialReefscapeFieldLayout(
               OfficialReefscapeFieldLayout.FieldType.WELDED
           );
+
+
+
   
           // Pass it into your Vision2 subsystem
           vision2 = new Vision2();
@@ -168,8 +167,8 @@ public class RobotContainer {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(-xs * -0.25 * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(-ys * -0.25 * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          .applyRequest(() -> drive.withVelocityX(xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(ys * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
@@ -248,16 +247,31 @@ public class RobotContainer {
  double xs = 0;
  double ys = 0;
   public void periodic() {
-    
-    xs += joystick.getLeftY();
-    ys += joystick.getLeftX();
-    xs *= .8;
-    ys *= .8;
+    int mode = 1;
+    //mode 1: trapezoid profile
+    //mode default: reg
+    switch(mode) {
+      case 1 : 
+      xs += joystick.getLeftY();
+      ys += joystick.getLeftX();
+      xs *= speedDecay;
+      ys *= speedDecay;
+      break;
+      default : 
+      xs = joystick.getLeftY() * maxN;
+      ys = joystick.getLeftX() * maxN;
+      break;
+    }
 
-    /* 
-    xs = joystick.getLeftY();
-    ys = joystick.getLeftX();
-    */
+    if (op.getLeftTriggerAxis() >= .99) {
+      op.setRumble(RumbleType.kLeftRumble, 0.3);
+    } else if (op.getLeftTriggerAxis() >= 0.05) {
+      op.setRumble(RumbleType.kLeftRumble, 0.5);
+    }
+
+    if (op.getRightTriggerAxis() >= 0.05) {
+      op.setRumble(RumbleType.kRightRumble, 0.5);
+    }
 
 
 
