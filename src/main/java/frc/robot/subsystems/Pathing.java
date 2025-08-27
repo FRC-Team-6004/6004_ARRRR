@@ -6,18 +6,26 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.Vision;
-
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import org.littletonrobotics.junction.Logger;
 
 public class Pathing extends SubsystemBase {
 
     private final SwerveDrivePoseEstimator poseEstimator;
     private final AutoBuilder autoBuilder;
     private final Vision vision;
+
+    // Low-pass filter state
+    private Pose2d lastFilteredVision = null;
+
+    // Reefscape field dimensions (meters)
+    private static final double FIELD_LENGTH_METERS = 17.54;
+    private static final double FIELD_WIDTH_METERS = 8.05;
 
     public Pathing(
             SwerveDriveKinematics kinematics,
@@ -45,16 +53,48 @@ public class Pathing extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Update odometry from drivetrain (call updateOdometry somewhere else)
+        // Update odometry elsewhere via updateOdometry()
 
-        // Get vision updates automatically
         if (vision != null) {
-            Pose2d visionPose = vision.getLatestFieldPose2d();
-            double timestamp = vision.getPoseTimestamp();
+            vision.getLatestFieldPose().ifPresent(visionPose -> {
+                double timestamp = vision.getPoseTimestamp();
+                Pose2d currentPose = poseEstimator.getEstimatedPosition();
 
-            if (visionPose != null) {
-                poseEstimator.addVisionMeasurement(visionPose, timestamp);
-            }
+                // --- Sanity checks ---
+                boolean insideField =
+                        visionPose.getX() >= 0 && visionPose.getX() <= FIELD_LENGTH_METERS &&
+                        visionPose.getY() >= 0 && visionPose.getY() <= FIELD_WIDTH_METERS;
+
+                double jumpDistance = currentPose.getTranslation().getDistance(visionPose.getTranslation());
+                boolean closeEnough = jumpDistance < 2.0; // reject jumps > 2 meters
+
+                // Logging for debugging
+                Logger.recordOutput("Pathing/OdometryPose", currentPose);
+                Logger.recordOutput("Pathing/VisionPose", visionPose);
+                Logger.recordOutput("Pathing/JumpDistance", jumpDistance);
+                Logger.recordOutput("Pathing/VisionTimestamp", timestamp);
+                Logger.recordOutput("Pathing/FPGATimestamp", Timer.getFPGATimestamp());
+                Logger.recordOutput("Pathing/InsideField", insideField);
+                Logger.recordOutput("Pathing/CloseEnough", closeEnough);
+
+                if (insideField && closeEnough) {
+                    // Low-pass filter for smoothing
+                    double alpha = 0.2;
+                    if (lastFilteredVision == null) {
+                        lastFilteredVision = visionPose;
+                    } else {
+                        lastFilteredVision = new Pose2d(
+                                lastFilteredVision.getX() + alpha * (visionPose.getX() - lastFilteredVision.getX()),
+                                lastFilteredVision.getY() + alpha * (visionPose.getY() - lastFilteredVision.getY()),
+                                lastFilteredVision.getRotation().plus(
+                                        visionPose.getRotation().minus(lastFilteredVision.getRotation()).times(alpha)
+                                )
+                        );
+                    }
+
+                    poseEstimator.addVisionMeasurement(lastFilteredVision, timestamp);
+                }
+            });
         }
     }
 
@@ -75,6 +115,6 @@ public class Pathing extends SubsystemBase {
     }
 
     public Command pathfindToPose(Pose2d targetPose, PathConstraints constraints) {
-        return autoBuilder.pathfindToPose(targetPose, constraints); // call instance method
+        return autoBuilder.pathfindToPose(targetPose, constraints);
     }
 }

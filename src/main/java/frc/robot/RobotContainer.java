@@ -65,6 +65,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
+
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -147,16 +149,17 @@ public class RobotContainer {
 
     autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
     
-    configureBindings();
 
     pathing = new Pathing(
       swerve.getKinematics(),
       swerve.getHeading(),
       swerve.getModulePositions(),
-      new Pose2d(0, 0, new Rotation2d(0)),
+      new Pose2d(2, 2, new Rotation2d(0)),
       null,     // AutoBuilder reference; Pathing can call swerve.configureAutoBuilder() internally if needed
       vision
   );
+
+  configureBindings();
     
   }
 
@@ -200,6 +203,12 @@ public class RobotContainer {
     //joystick.povUp().whileTrue(new ClimbPos2(climbSubsystem));
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
+    joystick.povRight().onTrue(
+      pathing.pathfindToPose(
+          new Pose2d(2, 2, Rotation2d.fromDegrees(90)),
+          new PathConstraints(3.0, 2.0, Math.PI, Math.PI)
+      )
+  );
 
     
 
