@@ -203,12 +203,15 @@ public class RobotContainer {
     //joystick.povUp().whileTrue(new ClimbPos2(climbSubsystem));
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
+    /* 
     joystick.povRight().onTrue(
       pathing.pathfindToPose(
           new Pose2d(2, 2, Rotation2d.fromDegrees(90)),
           new PathConstraints(3.0, 2.0, Math.PI, Math.PI)
       )
+    
   );
+  */
 
     
 
@@ -245,15 +248,21 @@ public class RobotContainer {
       break;
     }
 
+    /* 
     if (op.getLeftTriggerAxis() >= .99) {
       op.setRumble(RumbleType.kLeftRumble, 0.3);
     } else if (op.getLeftTriggerAxis() >= 0.05) {
       op.setRumble(RumbleType.kLeftRumble, 0.5);
+    } else {
+      op.setRumble(RumbleType.kLeftRumble, 0);
     }
 
     if (op.getRightTriggerAxis() >= 0.05) {
       op.setRumble(RumbleType.kRightRumble, 0.5);
+    } else {
+      op.setRumble(RumbleType.kRightRumble, 0);
     }
+      */
 
 
 
