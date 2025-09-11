@@ -22,6 +22,8 @@ public class GrabSub extends SubsystemBase {
     TalonFX intakeGrab;
     double CANrangeDistance;
     public boolean CoralDetect = false;
+    CANrange CANrange = new CANrange(1);
+    CANrangeConfiguration CANrangeConfigs = new CANrangeConfiguration();
 
     /**
      * This subsytem that controls the arm.
@@ -43,8 +45,6 @@ public class GrabSub extends SubsystemBase {
 
     @Override
     public void periodic() {
-             CANrange CANrange = new CANrange(1);
-             CANrangeConfiguration CANrangeConfigs = new CANrangeConfiguration();
              CoralDetect = CANrange.getIsDetected().getValue();
 
     }

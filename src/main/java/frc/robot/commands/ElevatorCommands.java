@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ElevatorCommands {
+    
     public static Command setElevatorToPosition(Elevator elevator, int position) {
         double targetHeight;
 

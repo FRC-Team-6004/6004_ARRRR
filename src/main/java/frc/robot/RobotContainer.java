@@ -178,8 +178,8 @@ public class RobotContainer {
     constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
     constants.OIConstants.driverController.rightTrigger(0.5).onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
 
-   op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 1)
-   .andThen(new PivotPos0(pivotSubsystem))));
+   op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)
+  .andThen(new PivotPos0(pivotSubsystem))));
    op.povLeft().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)));
    op.povRight().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 3)));
    op.povUp().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 4)
@@ -273,10 +273,10 @@ public class RobotContainer {
       if (grabSubsystem.CoralDetect) {
         if ((c < 10) || (c < 30 && c > 20)) {
           setColor(0, 0, 0);
-          joystick.setRumble(RumbleType.kBothRumble, 1);
+          //joystick.setRumble(RumbleType.kBothRumble, 1);
         } else {
           setColor(0, 255, 0);
-          joystick.setRumble(RumbleType.kBothRumble, 0.0);
+          //joystick.setRumble(RumbleType.kBothRumble, 0.0);
         }
         c++;
       } else {
@@ -293,26 +293,30 @@ public class RobotContainer {
 
   public void rainbow() {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-      int hue = (int) (c * 9 + (i * 360 / m_ledBuffer.getLength())) % 360; // Faster and smoother rainbow effect
-      double wave = Math.sin((c + i) * 0.2) * 0.5 + 0.5; // Wave-like pulsating brightness
-      double sparkle = Math.random() < 0.02 ? 1.0 : wave; // Add occasional sparkles
-      int r = (int) (Math.sin(0.024 * hue + 0) * 100 * sparkle + 100); // Reduced brightness
-      int g = (int) (Math.sin(0.024 * hue + 2) * 100 * sparkle + 100); // Reduced brightness
-      int b = (int) (Math.sin(0.024 * hue + 4) * 100 * sparkle + 100); // Reduced brightness
-      m_ledBuffer.setRGB(i, r, g, b);
+        // Cycle hue smoothly across LEDs
+        int hue = (int) (c + (i * 360 / m_ledBuffer.getLength())) % 360;
+
+        // Convert HSV to RGB, dim by scaling brightness
+        int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1.0f, 0.3f); // 0.3f = dimmed brightness
+
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+
+        m_ledBuffer.setRGB(i, r, g, b);
     }
     m_led.setData(m_ledBuffer);
-    c += 1;
-  }
+    c += 5;
+}
 
   public void fox() {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
       if ((int) (((i + c) / 5) % 3) == 0) {
-        m_ledBuffer.setRGB(i, 255, 40, 0); // Orange for even indices
+        m_ledBuffer.setRGB(i, 255, 40, 0); // Orange 
       } else if ((int) (((i + c) / 5) % 3) == 1) {
-        m_ledBuffer.setRGB(i, 255, 255, 255); // White for odd indices
+        m_ledBuffer.setRGB(i, 255, 255, 255); // White 
       } else {
-        m_ledBuffer.setRGB(i, 2, 10, 10); // Gray for odd indices
+        m_ledBuffer.setRGB(i, 2, 10, 10); // Gray 
 
       }
     }
@@ -320,6 +324,32 @@ public class RobotContainer {
     c += 0.5;
   }
 
+  public void fox2() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      if ((int) (((i + c) / 5) % 3) == 0) {
+        m_ledBuffer.setRGB(i, 200, 0, 200); // Pink
+      } else if ((int) (((i + c) / 5) % 3) == 1) {
+        m_ledBuffer.setRGB(i, 255, 255, 255); // White
+      } else {
+        m_ledBuffer.setRGB(i, 2, 10, 10); // Gray
+
+      }
+    }
+    m_led.setData(m_ledBuffer);
+    c += 0.5;
+  }
+
+  public void fun() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      if (c % 20 > 10) {
+        m_ledBuffer.setRGB(i, 255, 0, 0); // red
+      } else {
+        m_ledBuffer.setRGB(i, 0, 0, 255); // blue
+      }
+    }
+    m_led.setData(m_ledBuffer);
+    c += 1;
+  }
   public void test() {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
       if (i <= (m_ledBuffer.getLength() * tesController.getRightTriggerAxis())) {

@@ -64,7 +64,9 @@ public class Robot extends LoggedRobot {
   public void robotInit(){
     Pathfinding.setPathfinder(new LocalADStarAK());
 
-    
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(18));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(30));
+    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(42));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(11));
@@ -73,9 +75,7 @@ public class Robot extends LoggedRobot {
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(14));  
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(15));  
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(16));
-    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(18));
-    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(30));
-    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(42));
+
 
 
     m_orchestra.loadMusic("sb.chrp");
@@ -110,6 +110,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {
     //m_orchestra.play();
+    
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
