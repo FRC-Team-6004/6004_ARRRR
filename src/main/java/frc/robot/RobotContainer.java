@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
+import frc.robot.commands.AutoAlignAndDrive;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
@@ -39,12 +40,13 @@ import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
 import frc.robot.commands.Testthrow;
+import frc.robot.commands.strafe;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GenericRequirement;
 import frc.robot.subsystems.GrabSub;
-import frc.robot.subsystems.Pathing;
+//import frc.robot.subsystems.Pathing;
 import frc.robot.subsystems.PivotSub;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
@@ -58,6 +60,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -67,6 +70,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.MathUtil;
 
 public class RobotContainer {
   private RobotVisualizer visualizer;
@@ -94,7 +98,7 @@ public class RobotContainer {
       TunerConstants.BackRight
   );
   
-  public final Pathing pathing;
+  //public final Pathing pathing;
 
   // private final Vision vision;
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -150,14 +154,7 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
     
 
-    pathing = new Pathing(
-      swerve.getKinematics(),
-      swerve.getHeading(),
-      swerve.getModulePositions(),
-      new Pose2d(2, 2, new Rotation2d(0)),
-      null,     // AutoBuilder reference; Pathing can call swerve.configureAutoBuilder() internally if needed
-      vision
-  );
+
 
   configureBindings();
     
@@ -169,7 +166,7 @@ public class RobotContainer {
       drivetrain
           .applyRequest(() -> drive.withVelocityX(xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withVelocityY(ys * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withRotationalRate(-constants.OIConstants.driverController.getRightX() * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
+              .withRotationalRate(-rs * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
     constants.OIConstants.driverController.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -178,7 +175,7 @@ public class RobotContainer {
     constants.OIConstants.driverController.rightTrigger(0.5).onTrue(Commands.runOnce(() -> drivetrain.setSlowMode(true)));
     constants.OIConstants.driverController.rightTrigger(0.5).onFalse(Commands.runOnce(() -> drivetrain.setSlowMode(false)));
 
-   op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)
+   op.povDown().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 1)
   .andThen(new PivotPos0(pivotSubsystem))));
    op.povLeft().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 2)));
    op.povRight().onTrue((new PivotPos1(pivotSubsystem)).andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 3)));
@@ -203,17 +200,12 @@ public class RobotContainer {
     //joystick.povUp().whileTrue(new ClimbPos2(climbSubsystem));
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
-    /* 
-    joystick.povRight().onTrue(
-      pathing.pathfindToPose(
-          new Pose2d(2, 2, Rotation2d.fromDegrees(90)),
-          new PathConstraints(3.0, 2.0, Math.PI, Math.PI)
-      )
-    
-  );
-  */
 
-    
+    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(-1.0, 0.5)));
+    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(1.0, 0.5)));
+
+    joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
+    joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }
@@ -231,22 +223,76 @@ public class RobotContainer {
  double c = 0;
  double xs = 0;
  double ys = 0;
+ double rs = 0;
+private boolean isStrafing = false;
+private double strafeStartTime = 0.0;
+private double strafeDuration = 0.0;
+private double strafeSpeed = 0.0; // positive = left, negative = right
+private boolean isAutoAligning = false;
+private double desiredPitch = 15.0;
+
+private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
+private final PIDController forwardPID = new PIDController(0.05, 0, 0);
+
+public void startStrafe(double speed, double durationSeconds) {
+  if (!isStrafing) {
+      isStrafing = true;
+      strafeSpeed = speed;
+      strafeDuration = durationSeconds;
+      strafeStartTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+  }
+}
+
+public void startAutoAlign() {
+  if (!isAutoAligning) {
+      isAutoAligning = true;
+
+      turnPID.setTolerance(1.0);     // degrees
+      forwardPID.setTolerance(1.0);  // pitch tolerance
+  }
+}
+
+public void stopAutoAlign() {
+  isAutoAligning = false;
+}
+
   public void periodic() {
     int mode = 1;
     //mode 1: trapezoid profile
     //mode default: reg
-    switch(mode) {
-      case 1 : 
-      xs += joystick.getLeftY();
-      ys += joystick.getLeftX();
-      xs *= speedDecay;
-      ys *= speedDecay;
-      break;
-      default : 
-      xs = joystick.getLeftY() * maxN;
-      ys = joystick.getLeftX() * maxN;
-      break;
+    double currentTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+
+    if (isStrafing) {
+        // Override joystick inputs while strafing
+        xs = 0.0;          // no forward/back motion
+        ys = strafeSpeed;  // left/right
+        rs = 0.0;          // no rotation
+    
+        // End strafe after specified time
+        if (currentTime - strafeStartTime >= strafeDuration) {
+            isStrafing = false;
+            xs = 0.0;
+            ys = 0.0;
+            rs = 0.0;
+        }
+    } else {
+        // Normal joystick control
+        switch(mode) {
+            case 1 : 
+                xs += joystick.getLeftY();
+                ys += joystick.getLeftX();
+                xs *= speedDecay;
+                ys *= speedDecay;
+                break;
+            default : 
+                xs = joystick.getLeftY() * maxN;
+                ys = joystick.getLeftX() * maxN;
+                rs = constants.OIConstants.driverController.getRightX();
+                break;
+        }
     }
+
+    autoAlignPeriodic();
 
     /* 
     if (op.getLeftTriggerAxis() >= .99) {
@@ -365,4 +411,37 @@ public void initializeOrchestra() {
 
 
 }
+
+public void autoAlignPeriodic() {
+  if (!isAutoAligning) return;
+
+  if (vision.hasTarget()) {
+      double yaw = vision.getTargetYaw();      // horizontal offset
+      double pitch = vision.getTargetPitch();  // vertical offset
+
+      // PID outputs (clamped to -1..1)
+      double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
+      double forwardOutput = MathUtil.clamp(forwardPID.calculate(pitch, desiredPitch), -1.0, 1.0);
+
+      // Scale to robot max speeds
+      xs = forwardOutput; // forward/back
+      ys = 0.0;  // no strafe
+      rs = turnOutput; // rotation
+  } else {
+      // Stop if target lost
+      xs = 0.0;
+      ys = 0.0;
+      rs = 0.0;
+      isAutoAligning = false;
+  }
+
+  // Stop when PID reaches setpoint
+  if (vision.hasTarget() && turnPID.atSetpoint() && forwardPID.atSetpoint()) {
+      xs = 0.0;
+      ys = 0.0;
+      rs = 0.0;
+      isAutoAligning = false;
+  }
 }
+}
+
