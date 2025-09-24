@@ -201,8 +201,8 @@ public class RobotContainer {
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(-1.0, 0.5)));
-    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(1.0, 0.5)));
+    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.25, 0.25)));
+    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(0.25, 0.25)));
 
     joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
     joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
@@ -229,7 +229,7 @@ private double strafeStartTime = 0.0;
 private double strafeDuration = 0.0;
 private double strafeSpeed = 0.0; // positive = left, negative = right
 private boolean isAutoAligning = false;
-private double desiredPitch = 15.0;
+private double desiredPitch = 10;
 
 private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
 private final PIDController forwardPID = new PIDController(0.05, 0, 0);
@@ -264,8 +264,8 @@ public void stopAutoAlign() {
 
     if (isStrafing) {
         // Override joystick inputs while strafing
-        xs = 0.0;          // no forward/back motion
-        ys = strafeSpeed;  // left/right
+        xs = -swerve.getSin() * maxN * strafeSpeed;          // no forward/back motion
+        ys = swerve.getCos() * maxN * strafeSpeed;  // left/right
         rs = 0.0;          // no rotation
     
         // End strafe after specified time
@@ -283,6 +283,7 @@ public void stopAutoAlign() {
                 ys += joystick.getLeftX();
                 xs *= speedDecay;
                 ys *= speedDecay;
+                rs = constants.OIConstants.driverController.getRightX();
                 break;
             default : 
                 xs = joystick.getLeftY() * maxN;
@@ -294,24 +295,6 @@ public void stopAutoAlign() {
 
     autoAlignPeriodic();
 
-    /* 
-    if (op.getLeftTriggerAxis() >= .99) {
-      op.setRumble(RumbleType.kLeftRumble, 0.3);
-    } else if (op.getLeftTriggerAxis() >= 0.05) {
-      op.setRumble(RumbleType.kLeftRumble, 0.5);
-    } else {
-      op.setRumble(RumbleType.kLeftRumble, 0);
-    }
-
-    if (op.getRightTriggerAxis() >= 0.05) {
-      op.setRumble(RumbleType.kRightRumble, 0.5);
-    } else {
-      op.setRumble(RumbleType.kRightRumble, 0);
-    }
-      */
-
-
-
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -1) {
       fox();
@@ -319,10 +302,8 @@ public void stopAutoAlign() {
       if (grabSubsystem.CoralDetect) {
         if ((c < 10) || (c < 30 && c > 20)) {
           setColor(0, 0, 0);
-          //joystick.setRumble(RumbleType.kBothRumble, 1);
         } else {
           setColor(0, 255, 0);
-          //joystick.setRumble(RumbleType.kBothRumble, 0.0);
         }
         c++;
       } else {
@@ -333,6 +314,42 @@ public void stopAutoAlign() {
     }
   }
 
+public void autoAlignPeriodic() {
+    if (!isAutoAligning) return;
+  
+    if (vision.hasTarget()) {
+        double yaw = vision.getTargetYaw();      // horizontal offset
+        double pitch = vision.getTargetPitch();  // vertical offset
+        System.out.println("yaw = " + yaw);
+        System.out.println("pitch = " + pitch);
+
+        // PID outputs (clamped to -1..1)
+        double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
+        double forwardOutput = MathUtil.clamp(forwardPID.calculate(pitch, desiredPitch), -1.0, 1.0);
+
+        System.out.println("turn out = " + turnOutput);
+        System.out.println("forward out = " + forwardOutput);
+
+        // Scale to robot max speeds
+        xs = swerve.getCos() * maxN * -forwardOutput;          // no forward/back motion
+        ys = swerve.getSin() * maxN * -forwardOutput;
+        rs = -turnOutput; // rotation
+    } else {
+        // Stop if target lost
+        xs = 0.0;
+        ys = 0.0;
+        rs = 0.0;
+        isAutoAligning = false;
+    }
+  
+    // Stop when PID reaches setpoint
+    if (vision.hasTarget() && turnPID.atSetpoint() && forwardPID.atSetpoint()) {
+        xs = 0.0;
+        ys = 0.0;
+        rs = 0.0;
+        isAutoAligning = false;
+    }
+  }
   public int ranI() {
     return (int) (Math.random() * 255);
   }
@@ -407,41 +424,7 @@ public void stopAutoAlign() {
     System.out.println(m_ledBuffer.getLength() * tesController.getRightTriggerAxis());
   }
 
-public void initializeOrchestra() {
 
 
-}
-
-public void autoAlignPeriodic() {
-  if (!isAutoAligning) return;
-
-  if (vision.hasTarget()) {
-      double yaw = vision.getTargetYaw();      // horizontal offset
-      double pitch = vision.getTargetPitch();  // vertical offset
-
-      // PID outputs (clamped to -1..1)
-      double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
-      double forwardOutput = MathUtil.clamp(forwardPID.calculate(pitch, desiredPitch), -1.0, 1.0);
-
-      // Scale to robot max speeds
-      xs = forwardOutput; // forward/back
-      ys = 0.0;  // no strafe
-      rs = turnOutput; // rotation
-  } else {
-      // Stop if target lost
-      xs = 0.0;
-      ys = 0.0;
-      rs = 0.0;
-      isAutoAligning = false;
-  }
-
-  // Stop when PID reaches setpoint
-  if (vision.hasTarget() && turnPID.atSetpoint() && forwardPID.atSetpoint()) {
-      xs = 0.0;
-      ys = 0.0;
-      rs = 0.0;
-      isAutoAligning = false;
-  }
-}
 }
 

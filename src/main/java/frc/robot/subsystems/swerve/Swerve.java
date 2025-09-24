@@ -419,6 +419,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         return getState().Pose;
     }
 
+    public double getSin() {
+        return getState().Pose.getRotation().getSin();
+    }
+
+    public double getCos() {
+        return getState().Pose.getRotation().getCos();
+    }
+
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[] {
             getModule(0).getPosition(false),
