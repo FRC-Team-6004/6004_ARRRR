@@ -1,4 +1,3 @@
-
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
@@ -11,6 +10,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -30,86 +30,65 @@ public class Climb extends SubsystemBase {
 
     private static double targetpos = 0;
 
+    // === Load calculation constants (tune for your setup) ===
+    private static final double KT = 2.6 / 105.0;   // N·m/A, NEO empirical torque constant
+    private static final double FREE_CURRENT = 1.8; // A, NEO no-load current
+    private static final double GEAR_RATIO = ClimbConstants.kElevatorGearing; // use your gearbox ratio
+    private static final double EFFICIENCY = 0.90;  // assume 90% drivetrain efficiency
+    private static final double DRUM_RADIUS = ClimbConstants.kElevatorDrumRadius; // meters
+    private static final double G = 9.81;           // gravity (m/s^2)
+
     /**
-     * This subsytem that controls the arm.
+     * This subsystem controls the climb winch.
      */
     public Climb() {
-
-        // Set up the arm motor as a brushed motor
         climbMotor = new SparkMax(ClimbConstants.LIFT_MAIN, MotorType.kBrushless);
         climbMotorFollow = new SparkMax(ClimbConstants.LIFT_FOLLOW, MotorType.kBrushless);
 
-        // Set can timeout. Because this project only sets parameters once on
-        // construction, the timeout can be long without blocking robot operation. Code
-        // which sets or gets parameters during operation may need a shorter timeout.
         climbMotor.setCANTimeout(250);
         climbMotorFollow.setCANTimeout(250);
 
-        // Create and apply configuration for arm motor. Voltage compensation helps
-        // the arm behave the same as the battery
-        // voltage dips. The current limit helps prevent breaker trips or burning out
-        // the motor in the event the arm stalls.
         SparkMaxConfig elevatorConfig = new SparkMaxConfig();
         elevatorConfig.voltageCompensation(10);
         elevatorConfig.smartCurrentLimit(ClimbConstants.LIFT_CUR_LMT);
         elevatorConfig.idleMode(IdleMode.kBrake);
+
         climbMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         climbMotorFollow.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        // PID values need tuning for your specific elevator
         encoder = climbMotor.getEncoder();
         pid = new PIDController(3, 0, 0);
     }
 
     @Override
     public void periodic() {
-        //setPosition(targetpos);
+        // Report live load estimate
+        //System.out.println("Climb/LoadKg " + getEstimatedLoadKg());
     }
-    /** 
-     * This is a method that makes the arm move at your desired speed
-     *  Positive values make it spin forward and negative values spin it in reverse
-     * 
-     * @param speed motor speed from -1.0 to 1, with 0 stopping it
-     */
+
     public void moveClimb(double speed){
         climbMotor.set(speed);
         climbMotorFollow.set(-speed);
     }
-    /**
-   * A trigger for when the height is at an acceptable tolerance.
-   *
-   * @param height    Height in Meters
-   * @param tolerance Tolerance in meters.
-   * @return {@link Trigger}
-   */
-    public Trigger atHeight(double height, double tolerance)    {
+
+    public Trigger atHeight(double height, double tolerance) {
         return new Trigger(() -> MathUtil.isNear(height,
                                                 getHeightMeters(),
                                                 tolerance));
     }
 
-    // Returns elevator height in inches
     public double getPos() {
         return encoder.getPosition() / COUNTS_PER_INCH;
     }
 
     public double getHeightMeters(){
-        // m = (e / g) * (2*pi*r)
-        // m/(2*pi*r) = e / g
-        // m/(2*pi*r)*g = e
         return (encoder.getPosition() / ClimbConstants.kElevatorGearing) *
             (2 * Math.PI * ClimbConstants.kElevatorDrumRadius);
     }
 
     public void setPosition(double targetPos) {
         double pidOutput = pid.calculate(getPos(), targetPos);
-        
-        // Add gravity compensation
-        // The sign is positive because we need to work against gravity
-        // You might need to flip the sign depending on your motor polarity
         double motorOutput = pidOutput + GRAVITY_COMPENSATION;
-        
-        // Clamp the output to valid range
         motorOutput = Math.min(Math.max(motorOutput, -1.0), 1.0);
         
         climbMotor.set(motorOutput);  
@@ -120,4 +99,19 @@ public class Climb extends SubsystemBase {
         targetpos = t;
     }
 
+    /**
+     * Estimate the suspended load (in kilograms) based on motor currents.
+     */
+    public double getEstimatedLoadKg() {
+        double i1 = Math.max(0.0, climbMotor.getOutputCurrent() - FREE_CURRENT);
+        double i2 = Math.max(0.0, climbMotorFollow.getOutputCurrent() - FREE_CURRENT);
+
+        double tauMotor1 = KT * i1;
+        double tauMotor2 = KT * i2;
+
+        double tauOutTotal = (tauMotor1 + tauMotor2) * GEAR_RATIO * EFFICIENCY;
+
+        double force = tauOutTotal / DRUM_RADIUS; // Newtons
+        return force / G; // kilograms
+    }
 }

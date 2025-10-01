@@ -131,7 +131,7 @@ public class RobotContainer {
 
         // Reuse buffer
         // Default to a length of 150, start empty output
-        m_ledBuffer = new AddressableLEDBuffer(300 - 38);
+        m_ledBuffer = new AddressableLEDBuffer(300 - 120);
         m_led.setLength(m_ledBuffer.getLength());
 
         // Set the data
@@ -232,6 +232,7 @@ private boolean isAutoAligning = false;
 private double desiredPitch = 10;
 
 private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
+private final PIDController strafePID = new PIDController(0.0125, 0, 0);
 private final PIDController forwardPID = new PIDController(0.05, 0, 0);
 
 public void startStrafe(double speed, double durationSeconds) {
@@ -326,6 +327,7 @@ public void autoAlignPeriodic() {
         // PID outputs (clamped to -1..1)
         double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
         double forwardOutput = MathUtil.clamp(forwardPID.calculate(pitch, desiredPitch), -1.0, 1.0);
+        double strafeOut = MathUtil.clamp(strafePID.calculate(yaw, 0.0), -1.0, 1.0);
 
         System.out.println("turn out = " + turnOutput);
         System.out.println("forward out = " + forwardOutput);
@@ -333,6 +335,10 @@ public void autoAlignPeriodic() {
         // Scale to robot max speeds
         xs = swerve.getCos() * maxN * -forwardOutput;          // no forward/back motion
         ys = swerve.getSin() * maxN * -forwardOutput;
+        xs += swerve.getSin() * maxN * strafeOut;
+        ys += -swerve.getCos() * maxN * strafeOut;
+        xs /= 2;
+        ys /= 2;
         rs = -turnOutput; // rotation
     } else {
         // Stop if target lost
