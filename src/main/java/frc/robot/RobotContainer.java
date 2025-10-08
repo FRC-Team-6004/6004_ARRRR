@@ -201,8 +201,8 @@ public class RobotContainer {
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.25, 0.25)));
-    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(0.25, 0.25)));
+    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(0.45, 0.25)));
+    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.45, 0.25)));
 
     joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
     joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
@@ -229,11 +229,11 @@ private double strafeStartTime = 0.0;
 private double strafeDuration = 0.0;
 private double strafeSpeed = 0.0; // positive = left, negative = right
 private boolean isAutoAligning = false;
-private double desiredPitch = 10;
+private double desiredPitch = 1.5;
 
 private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
 private final PIDController strafePID = new PIDController(0.0125, 0, 0);
-private final PIDController forwardPID = new PIDController(0.05, 0, 0);
+private final PIDController forwardPID = new PIDController(0.1, 0, 0);
 
 public void startStrafe(double speed, double durationSeconds) {
   if (!isStrafing) {
@@ -319,10 +319,13 @@ public void autoAlignPeriodic() {
     if (!isAutoAligning) return;
   
     if (vision.hasTarget()) {
-        double yaw = vision.getTargetYaw();      // horizontal offset
+        double yaw = vision.getTargetYaw();      // yaw offset
         double pitch = vision.getTargetPitch();  // vertical offset
+        double skew = vision.getTargetSkew();    // skew of tag
         System.out.println("yaw = " + yaw);
         System.out.println("pitch = " + pitch);
+        System.out.println("skew = " + skew);
+
 
         // PID outputs (clamped to -1..1)
         double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
@@ -331,6 +334,8 @@ public void autoAlignPeriodic() {
 
         System.out.println("turn out = " + turnOutput);
         System.out.println("forward out = " + forwardOutput);
+        System.out.println("strafe out = " + strafeOut);
+
 
         // Scale to robot max speeds
         xs = swerve.getCos() * maxN * -forwardOutput;          // no forward/back motion

@@ -30,6 +30,7 @@ public class Vision extends SubsystemBase {
         Logger.recordOutput("Vision/TargetID", getTargetID());
         Logger.recordOutput("Vision/TargetYaw", getTargetYaw());
         Logger.recordOutput("Vision/TargetPitch", getTargetPitch());
+        Logger.recordOutput("Vision/TargetSkew", getTargetSkew());
          
     }
 
@@ -52,4 +53,9 @@ public class Vision extends SubsystemBase {
     public int getTargetID() {
         return bestTarget.map(PhotonTrackedTarget::getFiducialId).orElse(-1);
     }
+
+    public double getTargetSkew() {
+        return bestTarget.map(PhotonTrackedTarget::getSkew).orElse(0.0);
+    }
+
 }
