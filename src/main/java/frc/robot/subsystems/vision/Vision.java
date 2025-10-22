@@ -9,9 +9,23 @@ import org.littletonrobotics.junction.Logger;
 
 import java.util.Optional;
 
+import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
+import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout.FieldType;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.swerve.Swerve;
+
 public class Vision extends SubsystemBase {
     private final PhotonCamera camera = new PhotonCamera("Front_Cam");
     private Optional<PhotonTrackedTarget> bestTarget = Optional.empty();
+    private OfficialReefscapeFieldLayout lay= new OfficialReefscapeFieldLayout(FieldType.WELDED);
+    private Swerve swerve= new Swerve(
+      TunerConstants.DrivetrainConstants,
+      50, // odometry update frequency
+      TunerConstants.FrontLeft,
+      TunerConstants.FrontRight,
+      TunerConstants.BackLeft,
+      TunerConstants.BackRight
+  );
 
     public Vision() {}
 
@@ -57,5 +71,10 @@ public class Vision extends SubsystemBase {
     public double getTargetSkew() {
         return bestTarget.map(PhotonTrackedTarget::getSkew).orElse(0.0);
     }
-
+    
+    public double getRotOffset() {
+        double tagrot = lay.getTagPose(getTargetID()).get().toPose2d().getRotation().getDegrees();
+        double robotrot = Swerve.getInstance().getPose().getRotation().getDegrees();
+        return (tagrot - robotrot);
+    }
 }

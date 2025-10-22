@@ -14,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
 import frc.robot.commands.AutoAlignAndDrive;
+import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
@@ -69,7 +71,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.trajectory.*;
 
+
+import choreo.auto.AutoChooser;
 import edu.wpi.first.math.MathUtil;
 
 public class RobotContainer {
@@ -89,14 +94,7 @@ public class RobotContainer {
   private final Vision vision = new Vision();
   
   // Swerve drivetrain
-  public final Swerve swerve = new Swerve(
-      TunerConstants.DrivetrainConstants,
-      50, // odometry update frequency
-      TunerConstants.FrontLeft,
-      TunerConstants.FrontRight,
-      TunerConstants.BackLeft,
-      TunerConstants.BackRight
-  );
+
   
   //public final Pathing pathing;
 
@@ -125,7 +123,6 @@ public class RobotContainer {
 
   public RobotContainer() throws IOException, ParseException {
 
-  
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
 
@@ -145,14 +142,26 @@ public class RobotContainer {
       m_led.setData(m_ledBuffer);
 
         CommandScheduler.getInstance().registerSubsystem(coverSubsystem);
+        CommandScheduler.getInstance().registerSubsystem(grabSubsystem);
+        CommandScheduler.getInstance().registerSubsystem(pivotSubsystem);
+        CommandScheduler.getInstance().registerSubsystem(elevatorSubsystem);
+
 
     GenericRequirement.initialize();
     drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
+    drivetrain.seedFieldCentric();
 
-    NamedCommandManager.registerNamedCommands();
+  autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
-    
+  NamedCommands.registerCommand("Strafe Right", Commands.runOnce(() -> startStrafe(0.45, 0.15)));
+  NamedCommands.registerCommand("Strafe Left", Commands.runOnce(() -> startStrafe(-0.45, 0.15)));
+  NamedCommands.registerCommand("Auto Align Start", Commands.runOnce(() -> startAutoAlign()));
+  NamedCommands.registerCommand("Auto Align Stop", Commands.runOnce(() -> stopAutoAlign()));
+  NamedCommands.registerCommand("GrabIn", new GrabIn(grabSubsystem));
+  NamedCommands.registerCommand("GrabOut", new GrabOut(grabSubsystem));
+  NamedCommands.registerCommand("L4", AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem));
+
+  NamedCommandManager.registerNamedCommands();
 
 
 
@@ -201,8 +210,8 @@ public class RobotContainer {
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(0.45, 0.25)));
-    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.45, 0.25)));
+    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(0.55, 0.1)));
+    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.55, 0.1)));
 
     joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
     joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
@@ -229,11 +238,11 @@ private double strafeStartTime = 0.0;
 private double strafeDuration = 0.0;
 private double strafeSpeed = 0.0; // positive = left, negative = right
 private boolean isAutoAligning = false;
-private double desiredPitch = 1.5;
+private double desiredPitch = 1;
 
 private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
-private final PIDController strafePID = new PIDController(0.0125, 0, 0);
-private final PIDController forwardPID = new PIDController(0.1, 0, 0);
+private final PIDController strafePID = new PIDController(0.02, 0, 0.0025);
+private final PIDController forwardPID = new PIDController(0.02, 0, 0);
 
 public void startStrafe(double speed, double durationSeconds) {
   if (!isStrafing) {
@@ -250,6 +259,7 @@ public void startAutoAlign() {
 
       turnPID.setTolerance(1.0);     // degrees
       forwardPID.setTolerance(1.0);  // pitch tolerance
+      strafePID.setTolerance(0.25);
   }
 }
 
@@ -265,8 +275,8 @@ public void stopAutoAlign() {
 
     if (isStrafing) {
         // Override joystick inputs while strafing
-        xs = -swerve.getSin() * maxN * strafeSpeed;          // no forward/back motion
-        ys = swerve.getCos() * maxN * strafeSpeed;  // left/right
+        xs = drivetrain.getPose().getRotation().getSin() * maxN * strafeSpeed;          // no forward/back motion
+        ys = -drivetrain.getPose().getRotation().getCos() * maxN * strafeSpeed;  // left/right
         rs = 0.0;          // no rotation
     
         // End strafe after specified time
@@ -321,36 +331,25 @@ public void autoAlignPeriodic() {
     if (vision.hasTarget()) {
         double yaw = vision.getTargetYaw();      // yaw offset
         double pitch = vision.getTargetPitch();  // vertical offset
-        double skew = vision.getTargetSkew();    // skew of tag
-        System.out.println("yaw = " + yaw);
-        System.out.println("pitch = " + pitch);
-        System.out.println("skew = " + skew);
+        double roff = vision.getRotOffset();
 
-
-        // PID outputs (clamped to -1..1)
-        double turnOutput = MathUtil.clamp(turnPID.calculate(yaw, 0.0), -1.0, 1.0);
+        double turnOutput = MathUtil.clamp(turnPID.calculate(roff, 0.0), -1.0, 1.0);
         double forwardOutput = MathUtil.clamp(forwardPID.calculate(pitch, desiredPitch), -1.0, 1.0);
         double strafeOut = MathUtil.clamp(strafePID.calculate(yaw, 0.0), -1.0, 1.0);
 
-        System.out.println("turn out = " + turnOutput);
-        System.out.println("forward out = " + forwardOutput);
-        System.out.println("strafe out = " + strafeOut);
-
-
-        // Scale to robot max speeds
-        xs = swerve.getCos() * maxN * -forwardOutput;          // no forward/back motion
-        ys = swerve.getSin() * maxN * -forwardOutput;
-        xs += swerve.getSin() * maxN * strafeOut;
-        ys += -swerve.getCos() * maxN * strafeOut;
+        xs = drivetrain.getCos() * maxN * -forwardOutput;          // no forward/back motion
+        ys = drivetrain.getSin() * maxN * -forwardOutput;
+        xs += drivetrain.getPose().getRotation().getSin() * maxN * strafeOut;
+        ys += -drivetrain.getPose().getRotation().getCos() * maxN * strafeOut;
         xs /= 2;
         ys /= 2;
-        rs = -turnOutput; // rotation
+        rs = turnOutput; // rotation
     } else {
         // Stop if target lost
         xs = 0.0;
         ys = 0.0;
         rs = 0.0;
-        isAutoAligning = false;
+        //isAutoAligning = false;
     }
   
     // Stop when PID reaches setpoint
@@ -435,7 +434,9 @@ public void autoAlignPeriodic() {
     System.out.println(m_ledBuffer.getLength() * tesController.getRightTriggerAxis());
   }
 
-
+  public void resetOdometry(Pose2d pose) {
+    drivetrain.resetPose(pose);
+  }
 
 }
 

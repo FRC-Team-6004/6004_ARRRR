@@ -114,7 +114,7 @@ public class constants {
   public static final class ClimbConstants {
     public static final int LIFT_MAIN = 60; //ID
     public static final int LIFT_FOLLOW = 10; //ID
-    public static final int LIFT_CUR_LMT = 40;   //const
+    public static final int LIFT_CUR_LMT = 42;   //const
 
     public static final double LIFT_MOTOR_VOLTAGE_COMP = 10;
     public static final double LIFT_SPEED_DOWN = 0.2;

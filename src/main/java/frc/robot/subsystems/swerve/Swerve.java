@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
@@ -240,31 +241,48 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     private void configureAutoBuilder() {
         try {
             var config = RobotConfig.fromGUISettings();
+    
             AutoBuilder.configure(
                 () -> getState().Pose,   // Supplier of current robot pose
                 this::resetPose,         // Consumer for seeding pose against auto
                 () -> getState().Speeds, // Supplier of current robot speeds
                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(speeds)
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
+                (speeds, feedforwards) -> {
+                    // Flip Y feedforward array
+                    double[] yForces = feedforwards.robotRelativeForcesYNewtons();
+                    for (int i = 0; i < yForces.length; i++) {
+                        yForces[i] = -yForces[i];
+                    }
+    
+                    setControl(
+                        m_pathApplyRobotSpeeds
+                            .withSpeeds(new ChassisSpeeds(
+                                speeds.vxMetersPerSecond,
+                                -speeds.vyMetersPerSecond,   // flip chassis Y direction
+                                speeds.omegaRadiansPerSecond
+                            ))
+                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(yForces)   // flipped array
+                    );
+                },
                 new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(10, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
+                    new PIDConstants(10, 0, 0), // translation PID
+                    new PIDConstants(7, 0, 0)   // rotation PID
                 ),
                 config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                // Flip path for Red alliance if needed
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this // Subsystem for requirements
             );
+    
         } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+            DriverStation.reportError(
+                "Failed to load PathPlanner config and configure AutoBuilder",
+                ex.getStackTrace()
+            );
         }
     }
+
 
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
@@ -439,6 +457,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     public Rotation2d getHeading() {
         return new Rotation2d(getState().Pose.getRotation().getRadians());
     }
+
+    
 }
 
 
