@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 5.123758561643836,
-        "y": 5.114362157534247
+        "x": 5.079750000000001,
+        "y": 5.36075
       },
       "prevControl": {
-        "x": 4.7836177165734135,
-        "y": 5.015154411055374
+        "x": 4.739609154929578,
+        "y": 5.261542253521127
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -120.80144597613679
   },
   "reversed": false,
-  "folder": "Top Start - Coral",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

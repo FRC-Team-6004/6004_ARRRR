@@ -36,7 +36,17 @@ public class AutoCommands {
             @Override public void initialize() { t.reset(); }
             @Override public void execute() { grab.moveGrab(IntakeConstants.INTAKE_SPEED); }
             @Override public void end(boolean i) { grab.moveGrab(IntakeConstants.INTAKE_SPEED_HOLD); }
-            @Override public boolean isFinished() { return t.hasElapsed(0.3); }
+            @Override public boolean isFinished() { return t.hasElapsed(0.4); }
+        };
+    }
+    public static Command grabOutAuto(GrabSub grab) {
+        return new Command() {
+            Timer t = new Timer();
+            { t.start(); }
+            @Override public void initialize() { t.reset(); }
+            @Override public void execute() { grab.moveGrab(-IntakeConstants.INTAKE_SPEED); }
+            @Override public void end(boolean i) { grab.moveGrab(IntakeConstants.INTAKE_SPEED_HOLD); }
+            @Override public boolean isFinished() { return t.hasElapsed(0.4); }
         };
     }
 }

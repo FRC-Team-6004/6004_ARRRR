@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.123758561643836,
-        "y": 5.114362157534247
+        "x": 5.079750000000001,
+        "y": 5.36075
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.6829783704914405,
-        "y": 4.833370816742795
+        "x": 5.638969808847605,
+        "y": 5.079758659208548
       },
       "isLocked": false,
       "linkedName": "JI"
     },
     {
       "anchor": {
-        "x": 1.2471318493150685,
-        "y": 7.6687285958904114
+        "x": 0.96525,
+        "y": 7.31075
       },
       "prevControl": {
-        "x": 1.0301022969124067,
-        "y": 7.792817972486075
+        "x": 0.7482204475973383,
+        "y": 7.434839376595663
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -54.28004568770971
   },
   "reversed": false,
-  "folder": "Coral - Top station",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": -120.80144597613679

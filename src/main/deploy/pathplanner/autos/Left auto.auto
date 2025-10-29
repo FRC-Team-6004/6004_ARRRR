@@ -11,15 +11,21 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.5
+            "name": "L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "GrabOut"
+            "name": "GrabIn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L1"
           }
         },
         {
@@ -31,13 +37,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "GrabOut"
+            "name": "GrabIn"
           }
         },
         {
@@ -47,15 +53,21 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.5
+            "name": "L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "GrabOut"
+            "name": "GrabIn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L1"
           }
         },
         {
@@ -67,19 +79,43 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "GrabOut"
+            "name": "GrabIn"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Top_Station - AB"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GrabIn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "AB - Top_Station"
           }
         },
         {
@@ -91,19 +127,13 @@
         {
           "type": "named",
           "data": {
-            "name": "GrabOut"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "AB - Top_Station"
+            "name": "GrabIn"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "full autos",
+  "folder": null,
   "choreoAuto": false
 }

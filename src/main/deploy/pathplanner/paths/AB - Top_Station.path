@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.2305222602739723,
-        "y": 3.9949486301369865
+        "x": 2.87625,
+        "y": 3.8592499999999994
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.2207950918680255,
-        "y": 4.358168840712132
+        "x": 2.8665228315940534,
+        "y": 4.222470210575144
       },
       "isLocked": false,
       "linkedName": "AB"
     },
     {
       "anchor": {
-        "x": 1.245,
-        "y": 7.6687285958904114
+        "x": 0.96525,
+        "y": 7.31075
       },
       "prevControl": {
-        "x": 1.127632109303527,
-        "y": 7.889465494105144
+        "x": 0.847882109303527,
+        "y": 7.531486898214732
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -54.28004568770971
   },
   "reversed": false,
-  "folder": "Coral - Top station",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

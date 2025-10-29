@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.2471318493150685,
-        "y": 7.6687285958904114
+        "x": 0.96525,
+        "y": 7.31075
       },
       "prevControl": {
-        "x": 1.1300008015067242,
-        "y": 7.889591262811101
+        "x": 0.8481189521916558,
+        "y": 7.531612666920689
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -54.28004568770971
   },
   "reversed": false,
-  "folder": "Coral - Top station",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 59.93141717813753

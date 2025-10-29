@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -42,7 +44,6 @@ import frc.robot.commands.PivotPos1;
 import frc.robot.commands.PivotPos2;
 import frc.robot.commands.PivotPos3;
 import frc.robot.commands.Testthrow;
-import frc.robot.commands.strafe;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Elevator;
@@ -116,12 +117,11 @@ public class RobotContainer {
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
   
-  LoggedDashboardChooser<Command> autoChooser;
 
   double speedDecay = .8;
   double maxN = speedDecay / (1 - speedDecay);
 
-  public RobotContainer() throws IOException, ParseException {
+  public RobotContainer() {
 
             // Initialize the LED on PWM port 9
         m_led = new AddressableLED(9);
@@ -148,28 +148,35 @@ public class RobotContainer {
 
 
     GenericRequirement.initialize();
-    drivetrain = Swerve.initialize(new Swerve(TunerConstants.DrivetrainConstants, 50, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight));
+    drivetrain = TunerConstants.createDrivetrain();
     drivetrain.seedFieldCentric();
 
-  autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
 
-  NamedCommands.registerCommand("GrabIn", new GrabIn(grabSubsystem));
-  NamedCommands.registerCommand("GrabOut", new GrabOut(grabSubsystem));
+  NamedCommands.registerCommand("GrabIn", AutoCommands.grabOutAuto(grabSubsystem));
+  NamedCommands.registerCommand("GrabOut", AutoCommands.grabInAuto(grabSubsystem));
   NamedCommands.registerCommand("L4", AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem));
+  NamedCommands.registerCommand("L1", AutoCommands.l1Command(pivotSubsystem, elevatorSubsystem));
 
   NamedCommandManager.registerNamedCommands();
 
+  autoChooser = AutoBuilder.buildAutoChooser("Tests");
+
+  SmartDashboard.putData("Auto Mode", autoChooser);
 
 
   configureBindings();
     
   }
 
+  private final SendableChooser<Command> autoChooser;
+
+
   private void configureBindings() {
     // Drive command
     drivetrain.setDefaultCommand(
       drivetrain
-          .applyRequest(() -> drive.withVelocityX(xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          .applyRequest(() -> 
+          drive.withVelocityX(xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withVelocityY(ys * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-rs * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
@@ -201,22 +208,17 @@ public class RobotContainer {
     op.leftTrigger(0.99).whileTrue(new AlgaeHold(grabSubsystem));
     op.rightTrigger(0.05).whileTrue(new GrabOut(grabSubsystem));
 
-    //joystick.povDown().whileTrue(new ClimbPos1(climbSubsystem));
-    //joystick.povUp().whileTrue(new ClimbPos2(climbSubsystem));
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-    joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(0.55, 0.1)));
-    joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.55, 0.1)));
+    //joystick.rightBumper().onTrue((AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem)));
 
-    //joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
-    //joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }
 
   public Command getAutonomousCommand() {
-     return autoChooser.get();
+     return autoChooser.getSelected();
   }
 
   public void setColor(int r, int g, int b) {
@@ -229,39 +231,7 @@ public class RobotContainer {
  double xs = 0;
  double ys = 0;
  double rs = 0;
-private boolean isStrafing = false;
-private double strafeStartTime = 0.0;
-private double strafeDuration = 0.0;
-private double strafeSpeed = 0.0; // positive = left, negative = right
-private boolean isAutoAligning = false;
-private double desiredPitch = 1;
 
-private final PIDController turnPID = new PIDController(0.02, 0, 0.001);
-private final PIDController strafePID = new PIDController(0.02, 0, 0.0025);
-private final PIDController forwardPID = new PIDController(0.02, 0, 0);
-
-public void startStrafe(double speed, double durationSeconds) {
-  if (!isStrafing) {
-      isStrafing = true;
-      strafeSpeed = speed;
-      strafeDuration = durationSeconds;
-      strafeStartTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-  }
-}
-
-public void startAutoAlign() {
-  if (!isAutoAligning) {
-      isAutoAligning = true;
-
-      turnPID.setTolerance(1.0);     // degrees
-      forwardPID.setTolerance(1.0);  // pitch tolerance
-      strafePID.setTolerance(0.25);
-  }
-}
-
-public void stopAutoAlign() {
-  isAutoAligning = false;
-}
 
   public void periodic() {
     int mode = 1;
@@ -269,20 +239,7 @@ public void stopAutoAlign() {
     //mode default: reg
     double currentTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
 
-    if (isStrafing) {
-        // Override joystick inputs while strafing
-        xs = drivetrain.getPose().getRotation().getSin() * maxN * strafeSpeed;          // no forward/back motion
-        ys = -drivetrain.getPose().getRotation().getCos() * maxN * strafeSpeed;  // left/right
-        rs = 0.0;          // no rotation
-    
-        // End strafe after specified time
-        if (currentTime - strafeStartTime >= strafeDuration) {
-            isStrafing = false;
-            xs = 0.0;
-            ys = 0.0;
-            rs = 0.0;
-        }
-    } else {
+
         // Normal joystick control
         switch(mode) {
             case 1 : 
@@ -298,9 +255,7 @@ public void stopAutoAlign() {
                 rs = constants.OIConstants.driverController.getRightX();
                 break;
         }
-    }
 
-    autoAlignPeriodic();
 
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -1) {
@@ -319,10 +274,8 @@ public void stopAutoAlign() {
         c = 0;
       }
     }
-  }
 
-public void autoAlignPeriodic() {
-    if (!isAutoAligning) return;
+
   /* 
     if (vision.hasTarget()) {
         double yaw = vision.getTargetYaw();      // yaw offset

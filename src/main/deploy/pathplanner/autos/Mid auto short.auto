@@ -9,11 +9,23 @@
           "data": {
             "pathName": "Mid start - HG"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GrabIn"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "short autos",
+  "folder": null,
   "choreoAuto": false
 }
