@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.OIConstants;
 import frc.robot.commands.AlgaeHold;
-import frc.robot.commands.AutoAlignAndDrive;
+//import frc.robot.commands.AutoAlignAndDrive;
 import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
@@ -54,7 +54,7 @@ import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.subsystems.vision.OfficialReefscapeFieldLayout;
-import frc.robot.subsystems.vision.Vision;
+//import frc.robot.subsystems.vision.Vision;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.Cover;
 import org.photonvision.EstimatedRobotPose;
@@ -91,7 +91,7 @@ public class RobotContainer {
   public final GrabSub grabSubsystem = new GrabSub();
   public final Climb climbSubsystem = new Climb();
   public final Cover coverSubsystem = new Cover();
-  private final Vision vision = new Vision();
+  //private final Vision vision = new Vision();
   
   // Swerve drivetrain
 
@@ -153,10 +153,6 @@ public class RobotContainer {
 
   autoChooser = new LoggedDashboardChooser<>("Auto Chooser", AutoBuilder.buildAutoChooser("Driver Forward Straight"));
 
-  NamedCommands.registerCommand("Strafe Right", Commands.runOnce(() -> startStrafe(0.45, 0.15)));
-  NamedCommands.registerCommand("Strafe Left", Commands.runOnce(() -> startStrafe(-0.45, 0.15)));
-  NamedCommands.registerCommand("Auto Align Start", Commands.runOnce(() -> startAutoAlign()));
-  NamedCommands.registerCommand("Auto Align Stop", Commands.runOnce(() -> stopAutoAlign()));
   NamedCommands.registerCommand("GrabIn", new GrabIn(grabSubsystem));
   NamedCommands.registerCommand("GrabOut", new GrabOut(grabSubsystem));
   NamedCommands.registerCommand("L4", AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem));
@@ -213,8 +209,8 @@ public class RobotContainer {
     joystick.rightBumper().onTrue(Commands.runOnce(() -> startStrafe(0.55, 0.1)));
     joystick.leftBumper().onTrue(Commands.runOnce(() -> startStrafe(-0.55, 0.1)));
 
-    joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
-    joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
+    //joystick.a().onTrue(Commands.runOnce(() -> startAutoAlign()));
+    //joystick.a().onFalse(Commands.runOnce(() -> stopAutoAlign()));
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }
@@ -327,7 +323,7 @@ public void stopAutoAlign() {
 
 public void autoAlignPeriodic() {
     if (!isAutoAligning) return;
-  
+  /* 
     if (vision.hasTarget()) {
         double yaw = vision.getTargetYaw();      // yaw offset
         double pitch = vision.getTargetPitch();  // vertical offset
@@ -351,6 +347,7 @@ public void autoAlignPeriodic() {
         rs = 0.0;
         //isAutoAligning = false;
     }
+        
   
     // Stop when PID reaches setpoint
     if (vision.hasTarget() && turnPID.atSetpoint() && forwardPID.atSetpoint()) {
@@ -359,6 +356,7 @@ public void autoAlignPeriodic() {
         rs = 0.0;
         isAutoAligning = false;
     }
+        */
   }
   public int ranI() {
     return (int) (Math.random() * 255);

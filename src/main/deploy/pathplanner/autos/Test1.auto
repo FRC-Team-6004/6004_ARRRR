@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Top_Start_Blue-AB"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GrabOut"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "AB - Top_Station"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GrabIn"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Tests",
+  "choreoAuto": false
+}
