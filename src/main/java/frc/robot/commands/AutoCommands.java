@@ -29,6 +29,12 @@ public class AutoCommands {
             .andThen(new PivotPos0(pivotSubsystem));
     }
 
+    public static Command ThrowCoral (PivotSub pivotSubsystem, Elevator elevatorSubsystem, GrabSub grab) {
+        return new PivotPos3(pivotSubsystem)
+        .andThen(ElevatorCommands.setElevatorToPosition(elevatorSubsystem, 5))
+        .andThen(grabInAuto(grab));
+        }
+
     public static Command grabInAuto(GrabSub grab) {
         return new Command() {
             Timer t = new Timer();

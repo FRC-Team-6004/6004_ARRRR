@@ -156,6 +156,7 @@ public class RobotContainer {
   NamedCommands.registerCommand("GrabOut", AutoCommands.grabInAuto(grabSubsystem));
   NamedCommands.registerCommand("L4", AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem));
   NamedCommands.registerCommand("L1", AutoCommands.l1Command(pivotSubsystem, elevatorSubsystem));
+  NamedCommands.registerCommand("ThrowCoral", AutoCommands.ThrowCoral(pivotSubsystem, elevatorSubsystem, grabSubsystem));
 
   NamedCommandManager.registerNamedCommands();
 
@@ -176,8 +177,8 @@ public class RobotContainer {
     drivetrain.setDefaultCommand(
       drivetrain
           .applyRequest(() -> 
-          drive.withVelocityX(xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
-              .withVelocityY(ys * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+          drive.withVelocityX(-xs * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
+              .withVelocityY(-ys * (1 / maxN) * 1 * SwerveConstants.MaxSpeed * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))
               .withRotationalRate(-rs * .8 * SwerveConstants.MaxAngularRate * (drivetrain.isSlowMode() ? SwerveConstants.slowModeMultiplier : 1))));
 
     // field center
@@ -211,7 +212,8 @@ public class RobotContainer {
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
 
-    //joystick.rightBumper().onTrue((AutoCommands.l4Command(pivotSubsystem, elevatorSubsystem)));
+
+    joystick.rightBumper().onTrue((AutoCommands.ThrowCoral(pivotSubsystem, elevatorSubsystem, grabSubsystem)));
 
 
     drivetrain.registerTelemetry(logger::telemeterize);

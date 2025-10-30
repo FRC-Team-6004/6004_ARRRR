@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.335346564083174,
-        "y": 7.178822541115465
+        "x": 7.185192554209481,
+        "y": 7.1784118625372
       },
       "isLocked": false,
       "linkedName": "Start top blue"
     },
     {
       "anchor": {
-        "x": 5.079750000000001,
-        "y": 5.36075
+        "x": 5.343,
+        "y": 5.117
       },
       "prevControl": {
-        "x": 4.739609154929578,
-        "y": 5.261542253521127
+        "x": 5.181319875067012,
+        "y": 5.426262493527504
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -120.80144597613679
+    "rotation": -119.99999999999999
   },
   "reversed": false,
   "folder": null,

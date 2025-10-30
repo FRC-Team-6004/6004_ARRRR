@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.7929956740737145,
+        "x": 7.792995674073719,
         "y": 7.127615825838686
       },
       "isLocked": false,
@@ -61,7 +61,7 @@
     "rotation": 59.93141717813753
   },
   "reversed": false,
-  "folder": "Top Start - Coral",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
