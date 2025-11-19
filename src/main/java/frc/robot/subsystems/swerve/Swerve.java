@@ -31,7 +31,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
-//photon
+//photon 
+/* 
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -52,6 +53,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+*/
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements

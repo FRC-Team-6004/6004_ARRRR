@@ -37,6 +37,7 @@ import frc.robot.commands.AutoCommands;
 import frc.robot.commands.Barge;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
+import frc.robot.commands.DAP;
 import frc.robot.commands.GrabIn;
 import frc.robot.commands.GrabOut;
 import frc.robot.commands.PivotPos0;
@@ -91,7 +92,7 @@ public class RobotContainer {
   public final PivotSub pivotSubsystem = new PivotSub();
   public final GrabSub grabSubsystem = new GrabSub();
   public final Climb climbSubsystem = new Climb();
-  public final Cover coverSubsystem = new Cover();
+  //public final Cover coverSubsystem = new Cover();
   //private final Vision vision = new Vision();
   
   // Swerve drivetrain
@@ -141,7 +142,7 @@ public class RobotContainer {
       }
       m_led.setData(m_ledBuffer);
 
-        CommandScheduler.getInstance().registerSubsystem(coverSubsystem);
+        //CommandScheduler.getInstance().registerSubsystem(coverSubsystem);
         CommandScheduler.getInstance().registerSubsystem(grabSubsystem);
         CommandScheduler.getInstance().registerSubsystem(pivotSubsystem);
         CommandScheduler.getInstance().registerSubsystem(elevatorSubsystem);
@@ -211,6 +212,8 @@ public class RobotContainer {
 
     joystick.povDown().whileTrue(new ClimbDown(climbSubsystem));
     joystick.povUp().whileTrue(new ClimbUp(climbSubsystem));
+
+    //joystick.leftTrigger().onTrue(new DAP(coverSubsystem));
 
 
     joystick.rightBumper().onTrue((AutoCommands.ThrowCoral(pivotSubsystem, elevatorSubsystem, grabSubsystem)));

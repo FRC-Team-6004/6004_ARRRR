@@ -14,6 +14,7 @@ public class Cover extends SubsystemBase {
     /**
      * This subsytem that controls the arm.
      */
+    /* 
     public Cover() {
         motor = new TalonFX(CoverConstants.MotorID);
         
@@ -46,6 +47,5 @@ public class Cover extends SubsystemBase {
      */
     public void moveCover(double speed){
         motor.set(speed);
-
     }
 }

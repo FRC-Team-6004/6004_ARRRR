@@ -67,7 +67,6 @@ public class Robot extends LoggedRobot {
 
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(18));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(30));
-    m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(42));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(9));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(10));
     m_orchestra.addInstrument(new com.ctre.phoenix6.hardware.TalonFX(11));

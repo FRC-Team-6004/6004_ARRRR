@@ -15,6 +15,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.ElevatorConstants;
 
+
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+
+import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+
 public class Elevator extends SubsystemBase {
 
     private final SparkMax elevatorMotor;
@@ -27,6 +37,19 @@ public class Elevator extends SubsystemBase {
     private final double GRAVITY_COMPENSATION = (0.5 * 0.05); // edit if needed, should be good
     private double targetHeight = 0.0; //target height for elevator
     private double position = 0.0; // current position of the elevator
+
+    private ElevatorSim elevatorSim;
+    private double simulatedPositionInches = 0.0;
+
+    private SparkMaxSim elevatorSparkSim;
+    private SparkMaxSim elevatorFollowSparkSim;
+    private SparkRelativeEncoderSim encoderSim;
+    private SparkRelativeEncoderSim encoderSimFollower;
+
+
+    // Simple physics model
+    private SingleJointedArmSim elevatorPhysics;
+
 
     /**
      * This subsytem that controls the arm.
@@ -57,12 +80,40 @@ public class Elevator extends SubsystemBase {
         // PID values need tuning for your specific elevator
         encoder = elevatorMotor.getEncoder();
         pid = new PIDController(2.5, 0, 0);
+
+        if (RobotBase.isSimulation()) {
+            elevatorSim = new ElevatorSim(
+            DCMotor.getNEO(2),
+            25, //gearing
+            3.6, //mass
+            ElevatorConstants.kElevatorDrumRadius, //drum radius
+            0.01, //min height meters
+            1.7272,
+            false, //sim gravity?
+            0.02, //start height meters
+            new double[2]
+            );
+            // Sim motors
+            elevatorSparkSim = new SparkMaxSim(elevatorMotor, DCMotor.getNEO(1));
+            elevatorFollowSparkSim = new SparkMaxSim(elevatorMotorFollow, DCMotor.getNEO(1));
+
+            // Sim encoder
+            encoderSim = new SparkRelativeEncoderSim(elevatorMotor);
+            encoderSimFollower = new SparkRelativeEncoderSim(elevatorMotorFollow);
+        }
     }
 
     @Override
     public void periodic() {
-        setPosition(targetHeight);
+        if (RobotBase.isReal()) {
+            setPosition(targetHeight);
+        } else {
+            // Sim motors are written in simulationPeriodic()
+            // Just report simulated position as if it were the encoder
+            simulatedPositionInches = Units.metersToInches(elevatorSim.getPositionMeters());
+        }
     }
+    
     /** 
      * This is a method that makes the arm move at your desired speed
      *  Positive values make it spin forward and negative values spin it in reverse
@@ -122,4 +173,26 @@ public class Elevator extends SubsystemBase {
         targetHeight = th;
     }
 
+    @Override
+    public void simulationPeriodic() {
+        // Simulate motor voltage command from the PID logic
+        double pidOutput = pid.calculate(simulatedPositionInches, targetHeight);
+        double motorOutput = pidOutput + GRAVITY_COMPENSATION;
+        motorOutput = MathUtil.clamp(motorOutput, -1.0, 1.0);
+
+        // Convert motor output to voltage for sim physics
+        double appliedVoltage = motorOutput * 12.0;
+
+        // Step elevator physics
+        elevatorSim.setInputVoltage(appliedVoltage);
+        elevatorSim.update(0.02); // 20ms cycle
+
+        // Write sim position back into the SparkMax encoder
+        encoder.setPosition(
+            elevatorSim.getPositionMeters() /
+            (2 * Math.PI * ElevatorConstants.kElevatorDrumRadius) *
+            ElevatorConstants.kElevatorGearing
+        );
+        
+    }
 }
