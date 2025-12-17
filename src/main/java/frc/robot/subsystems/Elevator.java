@@ -173,26 +173,5 @@ public class Elevator extends SubsystemBase {
         targetHeight = th;
     }
 
-    @Override
-    public void simulationPeriodic() {
-        // Simulate motor voltage command from the PID logic
-        double pidOutput = pid.calculate(simulatedPositionInches, targetHeight);
-        double motorOutput = pidOutput + GRAVITY_COMPENSATION;
-        motorOutput = MathUtil.clamp(motorOutput, -1.0, 1.0);
 
-        // Convert motor output to voltage for sim physics
-        double appliedVoltage = motorOutput * 12.0;
-
-        // Step elevator physics
-        elevatorSim.setInputVoltage(appliedVoltage);
-        elevatorSim.update(0.02); // 20ms cycle
-
-        // Write sim position back into the SparkMax encoder
-        encoder.setPosition(
-            elevatorSim.getPositionMeters() /
-            (2 * Math.PI * ElevatorConstants.kElevatorDrumRadius) *
-            ElevatorConstants.kElevatorGearing
-        );
-        
-    }
 }

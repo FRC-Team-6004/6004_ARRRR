@@ -26,7 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 
 public class Robot extends LoggedRobot {
-  Orchestra m_orchestra = new Orchestra();
+  public static Orchestra m_orchestra = new Orchestra();
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;

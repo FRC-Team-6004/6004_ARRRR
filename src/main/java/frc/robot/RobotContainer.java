@@ -79,6 +79,8 @@ import com.pathplanner.lib.trajectory.*;
 import choreo.auto.AutoChooser;
 import edu.wpi.first.math.MathUtil;
 
+
+
 public class RobotContainer {
   private RobotVisualizer visualizer;
 
@@ -94,7 +96,7 @@ public class RobotContainer {
   public final Climb climbSubsystem = new Climb();
   //public final Cover coverSubsystem = new Cover();
   //private final Vision vision = new Vision();
-  
+
   // Swerve drivetrain
 
   
@@ -218,6 +220,9 @@ public class RobotContainer {
 
     joystick.rightBumper().onTrue((AutoCommands.ThrowCoral(pivotSubsystem, elevatorSubsystem, grabSubsystem)));
 
+    tesController.rightBumper().onTrue(Commands.runOnce(() -> christmasjukebox()));
+    tesController.leftBumper().onTrue(Commands.runOnce(() -> Robot.m_orchestra.stop()));
+
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }
@@ -261,7 +266,7 @@ public class RobotContainer {
                 break;
         }
 
-
+        /* 
     if (edu.wpi.first.wpilibj.DriverStation.getMatchTime() < 15 && 
         edu.wpi.first.wpilibj.DriverStation.getMatchTime() > -1) {
       fox();
@@ -279,6 +284,8 @@ public class RobotContainer {
         c = 0;
       }
     }
+      */
+      christmas();
 
 
   /* 
@@ -368,6 +375,34 @@ public class RobotContainer {
     c += 0.5;
   }
 
+  public void christmas() {
+    int cint = (int) c;
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      if ((i + cint) % 4 == 0) {
+        switch (((i + cint) % 24) / 4) {
+          case 0:m_ledBuffer.setRGB(i, 0, 225, 0); // green
+            break;
+          case 1:m_ledBuffer.setRGB(i, 250, 250, 0); // green
+            break;
+          case 2:m_ledBuffer.setRGB(i, 250, 0, 0); // green
+            break;
+          case 3:m_ledBuffer.setRGB(i, 250, 0, 250); // green
+            break;
+          case 4:m_ledBuffer.setRGB(i, 0, 0, 250); // green
+            break;
+          case 5:m_ledBuffer.setRGB(i, 0, 250, 250); // green
+            break;
+          default:m_ledBuffer.setRGB(i, 250, 250, 250); // green
+            break;
+        }
+      } else {
+        m_ledBuffer.setRGB(i, 0, 25, 0); // green
+      }
+    }
+    m_led.setData(m_ledBuffer);
+    c += 0.075;
+  }
+
   public void fun() {
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
       if (c % 20 > 10) {
@@ -394,5 +429,26 @@ public class RobotContainer {
     drivetrain.resetPose(pose);
   }
 
+  int christmastrack = 0;
+  public void christmasjukebox() {
+    Robot.m_orchestra.stop();
+    switch (christmastrack) {
+      case 0:Robot.m_orchestra.loadMusic("herecomessanta.chrp");
+        break;
+      case 1:Robot.m_orchestra.loadMusic("hollyjolly.chrp");
+        break;
+      case 2:Robot.m_orchestra.loadMusic("jinglebells.chrp");
+        break;
+      case 3:Robot.m_orchestra.loadMusic("sleigh.chrp");
+        break;
+      default:
+        break;
+    }
+    System.out.println(christmastrack);
+    christmastrack++;
+    christmastrack %= 4;
+    Robot.m_orchestra.play();
+  }
 }
+
 
